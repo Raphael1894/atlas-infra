@@ -69,7 +69,7 @@ fi
 ENV_FILE="$CONFIG_DIR/.env"
 
 if [ -f "$ENV_FILE" ]; then
-  echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/N]: "
+  echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/n]: "
   read -r MODIFY_ENV
   MODIFY_ENV=${MODIFY_ENV,,}
 
@@ -115,7 +115,7 @@ if [ -f "$ENV_FILE" ]; then
 
     # Confirm overwrite
     echo
-    echo -ne "${WARN}⚠️  Overwrite $ENV_FILE with these new values?${RESET} [y/N]: "
+    echo -ne "${WARN}⚠️  Overwrite $ENV_FILE with these new values?${RESET} [y/n]: "
     read -r CONFIRM_OVERWRITE
     CONFIRM_OVERWRITE=${CONFIRM_OVERWRITE,,}
 
