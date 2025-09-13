@@ -165,26 +165,28 @@ echo
 while true; do
   echo -e "${PROMPT}${HIGHLIGHT}What would you like to do?${RESET}"
   echo "  1) Install Atlas (setup configs, secrets, services)"
-  echo "  2) Prepare runtime (keeps only files needed to run the server)"
-  echo "  3) Run sanity check"
-  echo "  4) Troubleshoot Atlas"
+  echo "  2) Network configuration"
+  echo "  3) Prepare runtime (keeps only files needed to run the server)"
+  echo "  4) Run sanity check"
   echo "  5) Start services (make up-all)"
   echo "  6) Stop services (make down-all)"
-  echo "  7) Documentation"
-  echo "  8) Exit"
+  echo "  7) Troubleshoot Atlas"
+  echo "  8) Documentation"
+  echo "  9) Exit"
   echo
-  read -rp "👉 Choose an option [1-8]: " choice
+  read -rp "👉 Choose an option [1-9]: " choice
   echo
 
   case "$choice" in
     1) bash "$TOOLS_DIR/install.sh" ;;
-    2) bash "$TOOLS_DIR/prepare-runtime.sh" ;;
-    3) bash "$TOOLS_DIR/sanity-check.sh" ;;
-    4) bash "$TOOLS_DIR/troubleshoot.sh" ;;
+    2) bash "$TOOLS_DIR/network.sh" ;;
+    3) bash "$TOOLS_DIR/prepare-runtime.sh" ;;
+    4) bash "$TOOLS_DIR/sanity-check.sh" ;;
     5) make -f "$TOOLS_DIR/Makefile" up-all ;;
     6) make -f "$TOOLS_DIR/Makefile" down-all ;;
-    7) show_docs_menu ;;
-    8)
+    7) bash "$TOOLS_DIR/troubleshoot.sh" ;;
+    8) show_docs_menu ;;
+    9)
       echo -e "${SUCCESS}👋 Goodbye!${RESET}"
       exit 0
       ;;
@@ -193,3 +195,5 @@ while true; do
 
   echo
 done
+
+
