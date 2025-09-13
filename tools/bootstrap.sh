@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Load shared colors
+# ── Setup ────────────────────────────────────────────────
+
+# Resolve absolute path to this script
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
+# Load shared colors
 source "$SCRIPT_DIR/colors.sh"
 
 echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
 
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-cd "$SCRIPT_DIR"
+# Always operate from repo root
+cd "$SCRIPT_DIR/.."
 
-# --- Configs ---
+
+# ── Configs ──────────────────────────────────────────────
+
 if [ ! -f config/server_config.env ]; then
   echo -e "${ERROR}❌ Missing config/server_config.env. Copy template first.${RESET}"
   exit 1
@@ -23,20 +29,23 @@ source config/server_config.env
 set +a
 
 
-# --- Run setup scripts ---
+# ── Run setup scripts ────────────────────────────────────
+
 echo -e "${INFO}📦 Installing base system packages...${RESET}"
-sudo bash ../services/scripts/base.sh
+sudo bash services/scripts/base.sh
 
 echo -e "${INFO}🐳 Installing Docker...${RESET}"
-sudo bash ../services/scripts/docker.sh
+sudo bash services/scripts/docker.sh
 
 echo -e "${INFO}🔒 Setting up Tailscale...${RESET}"
-sudo bash ../services/scripts/tailscale.sh
+sudo bash services/scripts/tailscale.sh
 
 echo -e "${INFO}🛡️  Configuring firewall...${RESET}"
-sudo bash ../services/scripts/firewall.sh
+sudo bash services/scripts/firewall.sh
 
-# --- Ensure project network exists ---
+
+# ── Docker network ───────────────────────────────────────
+
 echo -e "${INFO}🌐 Ensuring Docker network '$ATLAS_DOCKER_NETWORK' exists...${RESET}"
 if ! docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
   docker network create "$ATLAS_DOCKER_NETWORK"
@@ -45,8 +54,13 @@ else
   echo -e "${SUCCESS}✅ Network '$ATLAS_DOCKER_NETWORK' already exists${RESET}"
 fi
 
-# --- Run core services ---
+
+# ── Core services ────────────────────────────────────────
+
 echo -e "${INFO}🚀 Starting core services...${RESET}"
-bash ../services/scripts/atlas.sh
+bash services/scripts/atlas.sh
+
+
+# ── Done ─────────────────────────────────────────────────
 
 echo -e "${SUCCESS}✅ Bootstrap complete!${RESET}"
