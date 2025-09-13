@@ -183,3 +183,4 @@ If something goes wrong:
    ```
 
 3. Read [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) for detailed fixes.  
+4. Read [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) for how to contribute.  
