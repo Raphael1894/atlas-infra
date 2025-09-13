@@ -178,7 +178,10 @@ while true; do
   echo
 
   case "$choice" in
-    1) bash "$TOOLS_DIR/install.sh" ;;
+    1) 
+      bash "$TOOLS_DIR/install.sh"
+      exit 0   # <── stop menu after installation
+      ;;
     2) bash "$TOOLS_DIR/network.sh" ;;
     3) bash "$TOOLS_DIR/prepare-runtime.sh" ;;
     4) bash "$TOOLS_DIR/sanity-check.sh" ;;
@@ -192,6 +195,7 @@ while true; do
       ;;
     *) echo -e "${ERROR}❌ Invalid option. Try again.${RESET}" ;;
   esac
+
 
   echo
 done

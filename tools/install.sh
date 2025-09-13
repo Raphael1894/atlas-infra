@@ -275,5 +275,3 @@ echo
 echo -e "   This step is required to enable secure remote access over Tailscale."
 echo
 
-exit 0
-
