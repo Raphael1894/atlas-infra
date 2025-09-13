@@ -29,23 +29,13 @@ git clone https://github.com/Raphael1894/atlas-infra.git
 cd atlas-infra
 ```
 
-### 3. Run the installer
+### 3. Launch Atlas
 ```bash
-./install.sh
+./atlas.sh
 ```
 
-You’ll be prompted for:
-- Server **hostname** (default: `atlas`)  
-- Base **domain** (default: `lan`)  
-- Gitea admin user/pass/email  
-- Vaultwarden admin token (auto-generated if blank)  
-- Grafana admin user/pass  
-- ntfy default access  
-
-👉 Secrets are written into `.env`  
-👉 Server identity is written into `server_config.env`  
-
-At the end, Atlas will be fully bootstrapped and services will be running.  
+👉 This starts the **Atlas Launcher** menu.  
+From there, you can choose to **install**, **bootstrap**, **check sanity**, or **troubleshoot**.  
 
 ---
 
@@ -70,11 +60,15 @@ With hostname = `atlas`, you’d get e.g. `http://atlas.lan`.
 
 ## ⚙️ Configuration
 
-- **Server settings** → `server_config.env`  
+- **Config templates** → `config/config-templates/`
+  - `server_config.env.example` → blueprint for server identity & system paths.  
+  - `.env.example` → blueprint for secrets (admin users, tokens, passwords).  
+
+- **Server settings** → `config/server_config.env`  
   - Hostname, domain, data paths, timezone, Docker network  
   - Safe to commit/version  
 
-- **Secrets** → `.env`  
+- **Secrets** → `config/.env`  
   - Service admin creds & tokens  
   - ⚠️ Never commit this file (it’s in `.gitignore`)  
   - Regenerate anytime by re-running `install.sh`  
@@ -83,16 +77,16 @@ With hostname = `atlas`, you’d get e.g. `http://atlas.lan`.
 
 ## 🛠 Managing Atlas
 
-The `Makefile` provides shortcuts:
+The `tools/Makefile` provides shortcuts:
 
 ```bash
-make up-core      # Start core services (proxy, dashboard, portainer)
-make up-all       # Start everything
-make down-all     # Stop everything
-make ps           # Show running containers
-make logs         # Tail logs for all containers
-make restart NAME=cloud   # Restart one stack (example: cloud)
-make clean        # Remove all containers, networks, and volumes
+make -f tools/Makefile up-core      # Start core services (proxy, dashboard, portainer)
+make -f tools/Makefile up-all       # Start everything
+make -f tools/Makefile down-all     # Stop everything
+make -f tools/Makefile ps           # Show running containers
+make -f tools/Makefile logs         # Tail logs for all containers
+make -f tools/Makefile restart NAME=cloud   # Restart one stack (example: cloud)
+make -f tools/Makefile clean        # Remove all containers, networks, and volumes
 ```
 
 ---
@@ -109,21 +103,31 @@ make clean        # Remove all containers, networks, and volumes
 
 ```
 atlas-infra/
-├── install.sh            # Interactive installer (entrypoint)
-├── bootstrap.sh          # System setup + core services
-├── server_config.env     # Server identity/config (safe to commit)
-├── .env                  # Secrets (never commit, auto-generated)
-├── .env.example          # Example secrets
-├── Makefile              # Manage Docker stacks
-├── scripts/              # Setup scripts (base, docker, tailscale, firewall, atlas)
-├── proxy/                # Traefik
-├── dashboard/            # Homepage
-├── portainer/            # Portainer
-├── cloud/                # OCIS
-├── knowledge/            # Gitea + Obsidian sync
-├── security/             # Vaultwarden
-├── monitoring/           # Prometheus + Grafana + exporters
-└── notifications/        # ntfy
+├── atlas.sh                # Root wrapper → launches tools/run.sh
+├── config/               # Configs and secrets
+│   ├── config-templates/ # Example blueprints for configs & secrets
+│   ├── server_config.env # Active server config (safe to commit)
+│   └── .env              # Secrets (never commit, auto-generated)
+├── docs/                 # Contributor & troubleshooting docs
+├── services/             # Modular service stacks
+│   ├── proxy/            # Traefik reverse proxy
+│   ├── dashboard/        # Homepage dashboard
+│   ├── portainer/        # Portainer manager
+│   ├── cloud/            # OCIS (Nextcloud alt)
+│   ├── knowledge/        # Gitea + Obsidian sync
+│   ├── security/         # Vaultwarden
+│   ├── monitoring/       # Prometheus, Grafana, Alertmanager
+│   ├── notifications/    # ntfy push notifications
+│   └── scripts/          # System setup scripts
+├── tools/                # Dev & runtime utilities
+│   ├── run.sh            # Atlas Launcher (menu)
+│   ├── install.sh        # Interactive installer
+│   ├── bootstrap.sh      # System prep & core services
+│   ├── prepare-runtime.sh# Export runtime-only folder
+│   ├── sanity-check.sh   # Quick health check
+│   ├── troubleshoot.sh   # Advanced troubleshooting
+│   └── Makefile          # Manage Docker stacks
+└── README.md             # This file
 ```
 
 ---
@@ -136,28 +140,46 @@ To rebuild Atlas from scratch:
 # Fresh Ubuntu install
 git clone https://github.com/Raphael1894/atlas-infra.git
 cd atlas-infra
-./install.sh
+./run.sh
 ```
 
 → Identical environment, every time.  
 
 ---
 
+## 🧹 Cleaning Development Files
+
+If you only want to keep the **runtime environment** (minimal files to run Atlas), you can run:
+
+```bash
+tools/prepare-runtime.sh
+```
+
+This will:
+
+1. Create a `runtime/` folder with minimal configs + docker-compose files.  
+2. Run a sanity check to ensure all services are healthy.  
+3. Ask if you want to delete development files and keep only runtime.  
+
+👉 Optional — keep full repo if you plan to update or contribute.
+
+---
+
 ## 🩺 Troubleshooting
 
-If something goes wrong during installation or a service doesn’t start:
+If something goes wrong:
 
-1. Run the built-in troubleshooter:
+1. Run the troubleshooter:
    ```bash
-   ./troubleshoot.sh
+   tools/troubleshoot.sh
    ```
    - Checks system requirements (Docker, Tailscale, firewall).  
-   - Verifies all services are running.  
-   - Saves logs of failing services to `logs/<service>.log`.  
-   - Shows ✅ (OK) or ❌ (FAILED) with hints.
+   - Verifies services are running.  
+   - Saves logs of failing services into `logs/`.  
 
-2. Open [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed fixes.  
-   - Common issues: Docker not starting, Tailscale not running, Vaultwarden token lost, Grafana login errors, firewall blocking LAN access.  
-   - Step-by-step instructions with commands.  
+2. Run the sanity check:
+   ```bash
+   tools/sanity-check.sh
+   ```
 
-👉 Beginners can rely on the `logs/` folder and TROUBLESHOOTING.md to quickly identify and fix issues.
+3. Read [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) for detailed fixes.  

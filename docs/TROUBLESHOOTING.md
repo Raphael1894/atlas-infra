@@ -9,7 +9,7 @@ This guide covers the most common issues you may encounter when installing or ru
 If installation failed or a service is down, run:
 
 ```bash
-./troubleshoot.sh
+tools/troubleshoot.sh
 ```
 
 This script will:
@@ -25,7 +25,7 @@ This script will:
 ## 🚫 Docker Issues
 
 **Symptoms:**
-- `troubleshoot.sh` shows ❌ at "Docker installed" or "Docker daemon running".  
+- `tools/troubleshoot.sh` shows ❌ at "Docker installed" or "Docker daemon running".  
 - Installer errors with: `Cannot connect to the Docker daemon`.  
 
 **Fix:**
@@ -47,7 +47,7 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 **Symptoms:**
 - Services like `http://atlas.lan` don’t resolve.  
-- `troubleshoot.sh` ❌ on "Docker network atlas_net" or "Tailscale running".  
+- `tools/troubleshoot.sh` ❌ on "Docker network atlas_net" or "Tailscale running".  
 
 **Fix:**
 1. Ensure Docker network exists:
@@ -66,18 +66,18 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 **Symptoms:**
 - Can't log into Vaultwarden admin panel.  
-- `troubleshoot.sh` ❌ at "Vaultwarden".  
+- `tools/troubleshoot.sh` ❌ at "Vaultwarden".  
 
 **Fix:**
-- Check `.env`:
+- Check `config/.env`:
   ```bash
-  grep VW_ADMIN_TOKEN .env
+  grep VW_ADMIN_TOKEN config/.env
   ```
 - If missing, regenerate:
   ```bash
-  docker compose -f security/docker-compose.yml down
-  echo "VW_ADMIN_TOKEN=new-token" >> .env
-  docker compose -f security/docker-compose.yml up -d
+  docker compose -f services/security/docker-compose.yml down
+  echo "VW_ADMIN_TOKEN=new-token" >> config/.env
+  docker compose -f services/security/docker-compose.yml up -d
   ```
 
 ---
@@ -86,12 +86,12 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 **Symptoms:**
 - Default login doesn’t work.  
-- `troubleshoot.sh` ❌ at "Grafana".  
+- `tools/troubleshoot.sh` ❌ at "Grafana".  
 
 **Fix:**
-- Check `.env`:
+- Check `config/.env`:
   ```bash
-  grep GRAFANA_ADMIN .env
+  grep GRAFANA_ADMIN config/.env
   ```
 - Reset password:
   ```bash
@@ -104,7 +104,7 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 **Symptoms:**
 - Services unreachable on LAN.  
-- `troubleshoot.sh` ❌ at "Firewall active".  
+- `tools/troubleshoot.sh` ❌ at "Firewall active".  
 
 **Fix:**
 ```bash
@@ -118,7 +118,7 @@ sudo ufw status
 ## 📦 Containers Crash or Restart
 
 **Symptoms:**
-- `troubleshoot.sh` ❌ for a service.  
+- `tools/troubleshoot.sh` ❌ for a service.  
 - Service logs in `logs/<service>.log` show errors.  
 
 **Fix:**
@@ -126,7 +126,7 @@ sudo ufw status
    ```bash
    less logs/<service>.log
    ```
-2. Check `.env` and `server_config.env` for wrong values.  
+2. Check `config/.env` and `config/server_config.env` for wrong values.  
 3. Verify file permissions → PUID/PGID in `server_config.env` must match your user.  
 
 ---
@@ -136,9 +136,9 @@ sudo ufw status
 If too many things are broken:
 
 ```bash
-make down-all
-make clean
-./install.sh
+make -f tools/Makefile down-all
+make -f tools/Makefile clean
+./run.sh
 ```
 
 ⚠️ This wipes containers, networks, and volumes. Backups in `/srv/atlas-backups` are safe.
@@ -147,7 +147,7 @@ make clean
 
 ## 📡 Still Stuck?
 
-1. Check the logs saved by `troubleshoot.sh` in the `logs/` folder.  
+1. Check the logs saved by `tools/troubleshoot.sh` in the `logs/` folder.  
 2. Manually view logs:
    ```bash
    docker logs <container_name> --tail=100 -f

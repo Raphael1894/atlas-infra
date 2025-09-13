@@ -14,29 +14,31 @@ echo -e "${CYAN}⚙️  Running Atlas bootstrap...${RESET}"
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 cd "$SCRIPT_DIR"
 
-if [ ! -f server_config.env ]; then
-  echo -e "${RED}❌ Missing server_config.env. Copy server_config.env.example first.${RESET}"
+# --- Configs ---
+if [ ! -f config/server_config.env ]; then
+  echo -e "${RED}❌ Missing config/server_config.env. Copy template first.${RESET}"
   exit 1
 fi
 
 # Load configs
 set -a
-source server_config.env
-[ -f .env ] && source .env
+source config/server_config.env
+[ -f config/.env ] && source config/.env
 set +a
+
 
 # --- Run setup scripts ---
 echo -e "${CYAN}📦 Installing base system packages...${RESET}"
-sudo bash scripts/base.sh
+sudo bash ../services/scripts/base.sh
 
 echo -e "${CYAN}🐳 Installing Docker...${RESET}"
-sudo bash scripts/docker.sh
+sudo bash ../services/scripts/docker.sh
 
 echo -e "${CYAN}🔒 Setting up Tailscale...${RESET}"
-sudo bash scripts/tailscale.sh
+sudo bash ../services/scripts/tailscale.sh
 
 echo -e "${CYAN}🛡️  Configuring firewall...${RESET}"
-sudo bash scripts/firewall.sh
+sudo bash ../services/scripts/firewall.sh
 
 # --- Ensure project network exists ---
 echo -e "${CYAN}🌐 Ensuring Docker network '$ATLAS_DOCKER_NETWORK' exists...${RESET}"
@@ -49,6 +51,6 @@ fi
 
 # --- Run core services ---
 echo -e "${CYAN}🚀 Starting core services...${RESET}"
-bash scripts/atlas.sh
+bash ../services/scripts/atlas.sh
 
 echo -e "${GREEN}✅ Bootstrap complete!${RESET}"
