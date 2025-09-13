@@ -68,6 +68,10 @@ fi
 
 echo -e "${SUCCESS}✅ Server identity configured${RESET}"
 
+
+# --- Run network configuration ---
+"$TOOLS_DIR/network.sh"
+
 # --- Load defaults from existing .env if available ---
 if [ -f "$CONFIG_DIR/.env" ]; then
   set -a
