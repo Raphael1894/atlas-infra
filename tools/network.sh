@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-source "$SCRIPT_DIR/../config/colors.sh"
+source "$SCRIPT_DIR/colors.sh"
 
 echo -e "${INFO}🌐 Network configuration tool starting...${RESET}"
 
