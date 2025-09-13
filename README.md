@@ -103,31 +103,52 @@ make -f tools/Makefile clean        # Remove all containers, networks, and volum
 
 ```
 atlas-infra/
-├── atlas.sh                # Root wrapper → launches tools/run.sh
-├── config/               # Configs and secrets
-│   ├── config-templates/ # Example blueprints for configs & secrets
-│   ├── server_config.env # Active server config (safe to commit)
-│   └── .env              # Secrets (never commit, auto-generated)
-├── docs/                 # Contributor & troubleshooting docs
-├── services/             # Modular service stacks
-│   ├── proxy/            # Traefik reverse proxy
-│   ├── dashboard/        # Homepage dashboard
-│   ├── portainer/        # Portainer manager
-│   ├── cloud/            # OCIS (Nextcloud alt)
-│   ├── knowledge/        # Gitea + Obsidian sync
-│   ├── security/         # Vaultwarden
-│   ├── monitoring/       # Prometheus, Grafana, Alertmanager
-│   ├── notifications/    # ntfy push notifications
-│   └── scripts/          # System setup scripts
-├── tools/                # Dev & runtime utilities
-│   ├── run.sh            # Atlas Launcher (menu)
-│   ├── install.sh        # Interactive installer
-│   ├── bootstrap.sh      # System prep & core services
-│   ├── prepare-runtime.sh# Export runtime-only folder
-│   ├── sanity-check.sh   # Quick health check
-│   ├── troubleshoot.sh   # Advanced troubleshooting
-│   └── Makefile          # Manage Docker stacks
-└── README.md             # This file
+├── atlas.sh # Root wrapper → launches tools/run.sh
+├── config/ # Configs and secrets
+│ ├── config-templates/ # Example blueprints for configs & secrets
+│ │ └── server_config.env.example
+│ ├── server_config.env # Active server config (safe to commit)
+│ └── .env # Secrets (never commit, auto-generated)
+├── docs/ # User documentation
+│ └── TROUBLESHOOTING.md
+├── .github/ # Community & meta files (picked up by GitHub)
+│ ├── CODE_OF_CONDUCT.md
+│ ├── CONTRIBUTING.md
+│ ├── ISSUE_TEMPLATE.md
+│ ├── PULL_REQUEST_TEMPLATE.md
+│ └── SECURITY.md
+├── services/ # Modular service stacks
+│ ├── proxy/ # Traefik reverse proxy
+│ ├── dashboard/ # Homepage dashboard
+│ │ ├── docker-compose.yml
+│ │ └── homepage.yaml
+│ ├── portainer/ # Portainer manager
+│ ├── cloud/ # OCIS (Nextcloud alt)
+│ ├── knowledge/ # Gitea + Obsidian sync
+│ ├── security/ # Vaultwarden
+│ ├── monitoring/ # Prometheus, Grafana, Alertmanager
+│ │ ├── grafana-provisioning/
+│ │ │ └── datasources.yml
+│ │ ├── prometheus.yml
+│ │ ├── alertmanager.yml
+│ │ └── docker-compose.yml
+│ ├── notifications/ # ntfy push notifications
+│ └── scripts/ # System setup scripts
+│ ├── atlas.sh
+│ ├── base.sh
+│ ├── docker.sh
+│ ├── firewall.sh
+│ └── tailscale.sh
+├── tools/ # Dev & runtime utilities
+│ ├── run.sh # Atlas Launcher (menu)
+│ ├── install.sh # Interactive installer
+│ ├── bootstrap.sh # System prep & core services
+│ ├── prepare-runtime.sh # Export runtime-only folder
+│ ├── sanity-check.sh # Quick health check
+│ ├── troubleshoot.sh # Advanced troubleshooting
+│ ├── colors.sh # Shared color codes for scripts
+│ └── Makefile # Manage Docker stacks
+└── README.md # This file
 ```
 
 ---
@@ -201,9 +222,10 @@ Contributions, forks, and community-driven improvements are welcome.
 Atlas Infra includes several docs to help you use and contribute:
 
 - [README](./README.md) → Main guide (you are here)  
-- [CONTRIBUTING](./docs/CONTRIBUTING.md) → How to contribute and dev workflow  
-- [LICENSE](./docs/LICENSE.md) → Project license (MIT)  
-- [SECURITY](./docs/SECURITY.md) → Security policy (no support, community fixes only)  
+- [CONTRIBUTING](./.github/CONTRIBUTING.md) → How to contribute and dev workflow  
+- [LICENSE](./LICENSE) → Project license (MIT)  
+- [SECURITY](./.github/SECURITY.md) → Security policy (no support, community fixes only)  
+- [CODE_OF_CONDUCT](./.github/CODE_OF_CONDUCT.md) → Community rules and expected behavior  
 - [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) → Common issues and how to fix them  
 
 👉 Start with **bash atlas.sh** to launch the menu and explore your options.
