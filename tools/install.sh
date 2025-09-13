@@ -108,20 +108,20 @@ if [ -f "$ENV_FILE" ]; then
     OCIS_JWT_SECRET_WAS_GENERATED=false
     OCIS_MACHINE_KEY_WAS_GENERATED=false
 
-    echo -ne "${PROMPT}👉 oCIS admin username (default: ${OCIS_ADMIN_USER:-admin}): ${RESET}"
+    echo -ne "${PROMPT}👉 oCIS admin username (default: admin): ${RESET}"
     read -r OCIS_USER
-    OCIS_USER=${OCIS_USER:-${OCIS_ADMIN_USER:-admin}}
+    OCIS_USER=${OCIS_USER:-admin}
 
-    echo -ne "${PROMPT}👉 oCIS admin password (default: ${OCIS_ADMIN_PASS:-changeme}): ${RESET}"
+    echo -ne "${PROMPT}👉 oCIS admin password (default: changeme): ${RESET}"
     read -r OCIS_PASS
-    OCIS_PASS=${OCIS_PASS:-${OCIS_ADMIN_PASS:-changeme}}
+    OCIS_PASS=${OCIS_PASS:-changeme}
 
     # Fixed/default IDs from oCIS docs
     OCIS_ADMIN_USER_ID="958d7151-528b-42b1-9e3a-fc9e7f1f5d34"
     OCIS_SYSTEM_USER_ID="admin"
     PROXY_USER_ID="admin"
 
-    # Generate only if missing
+    # Auto-generate only if missing
     if [ -z "${OCIS_JWT_SECRET:-}" ]; then
       OCIS_JWT_SECRET=$(openssl rand -hex 32)
       OCIS_JWT_SECRET_WAS_GENERATED=true
