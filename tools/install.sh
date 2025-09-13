@@ -68,9 +68,8 @@ fi
 
 echo -e "${SUCCESS}✅ Server identity configured${RESET}"
 
-
 # --- Run network configuration ---
-"$TOOLS_DIR/network.sh"
+bash "$TOOLS_DIR/network.sh"
 
 # --- Load defaults from existing .env if available ---
 if [ -f "$CONFIG_DIR/.env" ]; then
@@ -147,15 +146,9 @@ EOF
 
 echo -e "${SUCCESS}✅ Secrets written to $CONFIG_DIR/.env${RESET}"
 
-# --- Ensure scripts are executable ---
-chmod +x "$TOOLS_DIR/bootstrap.sh"
-chmod +x "$TOOLS_DIR/network.sh"
-chmod +x "$SERVICES_SCRIPTS"/*.sh
-chmod +x "$TOOLS_DIR"/*.sh
-
 # --- Run bootstrap ---
 echo -e "${INFO}⚙️  Running bootstrap...${RESET}"
-"$TOOLS_DIR/bootstrap.sh"
+bash "$TOOLS_DIR/bootstrap.sh"
 
 # --- Bring everything up ---
 echo -e "${INFO}🚀 Starting all services...${RESET}"
@@ -214,4 +207,3 @@ echo
 
 echo -e "${SUCCESS}✅ Setup finished. Your homelab is ready!${RESET}"
 echo
-
