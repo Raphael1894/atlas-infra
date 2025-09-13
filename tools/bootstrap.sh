@@ -13,6 +13,12 @@ echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
 cd "$REPO_ROOT"
 
 # ── Configs ──────────────────────────────────────────────
+
+echo "DEBUG: REPO_ROOT=$REPO_ROOT"
+echo "DEBUG: Looking for config at $CONFIG_FILE"
+ls -l "$REPO_ROOT/config" || echo "DEBUG: config dir not found"
+
+
 CONFIG_FILE="$REPO_ROOT/config/server_config.env"
 SECRETS_FILE="$REPO_ROOT/config/.env"
 
