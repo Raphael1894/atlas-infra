@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# --- Colors ---
-RED="\033[0;31m"
-GREEN="\033[0;32m"
-YELLOW="\033[1;33m"
-CYAN="\033[0;36m"
-RESET="\033[0m"
+# Load shared colors
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+source "$SCRIPT_DIR/colors.sh"
 
-echo -e "${CYAN}🔍 Running Atlas sanity check...${RESET}"
+echo -e "${INFO}🔍 Running Atlas sanity check...${RESET}"
 echo
 
 FAIL=0
@@ -24,41 +21,41 @@ fi
 
 # 1. Docker installed
 if command -v docker >/dev/null 2>&1; then
-  echo -e "${GREEN}✅ Docker is installed${RESET}"
+  echo -e "${SUCCESS}✅ Docker is installed${RESET}"
 else
-  echo -e "${RED}❌ Docker is not installed${RESET}"
+  echo -e "${ERROR}❌ Docker is not installed${RESET}"
   FAIL=1
 fi
 
 # 2. Docker daemon running
 if docker info >/dev/null 2>&1; then
-  echo -e "${GREEN}✅ Docker daemon is running${RESET}"
+  echo -e "${SUCCESS}✅ Docker daemon is running${RESET}"
 else
-  echo -e "${RED}❌ Docker daemon is not running${RESET}"
+  echo -e "${ERROR}❌ Docker daemon is not running${RESET}"
   FAIL=1
 fi
 
 # 3. Network exists
 if docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
-  echo -e "${GREEN}✅ Docker network '$ATLAS_DOCKER_NETWORK' exists${RESET}"
+  echo -e "${SUCCESS}✅ Docker network '$ATLAS_DOCKER_NETWORK' exists${RESET}"
 else
-  echo -e "${RED}❌ Docker network '$ATLAS_DOCKER_NETWORK' missing${RESET}"
+  echo -e "${ERROR}❌ Docker network '$ATLAS_DOCKER_NETWORK' missing${RESET}"
   FAIL=1
 fi
 
 # 4. Containers running
 echo
-echo -e "${CYAN}🔎 Checking containers...${RESET}"
+echo -e "${INFO}🔎 Checking containers...${RESET}"
 RUNNING_CONTAINERS=$(docker ps --format '{{.Names}}' | wc -l)
 if [ "$RUNNING_CONTAINERS" -eq 0 ]; then
-  echo -e "${RED}❌ No running containers found${RESET}"
+  echo -e "${ERROR}❌ No running containers found${RESET}"
   FAIL=1
 else
   docker ps --format '   {{.Names}} → {{.Status}}' | while read -r line; do
     if [[ "$line" == *"Up"* ]]; then
-      echo -e "${GREEN}✅ $line${RESET}"
+      echo -e "${SUCCESS}✅ $line${RESET}"
     else
-      echo -e "${RED}❌ $line${RESET}"
+      echo -e "${ERROR}❌ $line${RESET}"
       FAIL=1
     fi
   done
@@ -66,9 +63,9 @@ fi
 
 echo
 if [ "$FAIL" -eq 0 ]; then
-  echo -e "${GREEN}🎉 Sanity check passed. Atlas looks healthy!${RESET}"
+  echo -e "${SUCCESS}🎉 Sanity check passed. Atlas looks healthy!${RESET}"
   exit 0
 else
-  echo -e "${RED}⚠️  Sanity check failed. Please fix issues before cleaning.${RESET}"
+  echo -e "${ERROR}⚠️  Sanity check failed. ${RESET}"
   exit 1
 fi

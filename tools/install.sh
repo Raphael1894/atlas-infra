@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# --- Colors ---
-RED="\033[0;31m"
-GREEN="\033[0;32m"
-YELLOW="\033[1;33m"
-BLUE="\033[0;34m"
-CYAN="\033[0;36m"
-WHITE="\033[1;37m"
-BOLD="\033[1m"
-RESET="\033[0m"
+# Load shared colors
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+source "$SCRIPT_DIR/colors.sh"
 
-echo -e "${CYAN}🌌 Atlas Installer starting...${RESET}"
+echo -e "${INFO}🌌 Atlas Installer starting...${RESET}"
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 cd "$SCRIPT_DIR/.."   # Go to repo root
@@ -23,13 +17,13 @@ SERVICES_SCRIPTS="services/scripts"
 
 # --- Ensure server_config.env exists ---
 if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
-  echo -e "${YELLOW}⚠️  No server_config.env found. Creating one from template...${RESET}"
+  echo -e "${WARN}⚠️  No server_config.env found. Creating one from template...${RESET}"
   cp "$TEMPLATES_DIR/server_config.env.example" "$CONFIG_DIR/server_config.env"
 fi
 
 # --- Ensure .env exists (fallback only) ---
 if [ ! -f "$CONFIG_DIR/.env" ]; then
-  echo -e "${YELLOW}⚠️  No .env found. Creating one from template (will be overwritten by installer prompts)...${RESET}"
+  echo -e "${WARN}⚠️  No .env found. Creating one from template (will be overwritten by installer prompts)...${RESET}"
   if [ -f "$TEMPLATES_DIR/.env.example" ]; then
     cp "$TEMPLATES_DIR/.env.example" "$CONFIG_DIR/.env"
   else
@@ -38,12 +32,12 @@ if [ ! -f "$CONFIG_DIR/.env" ]; then
 fi
 
 # --- Prompt for server hostname ---
-echo -ne "${WHITE}👉 Enter the name of your server (default: atlas): ${RESET}"
+echo -ne "${PROMPT}👉 Enter the name of your server (default: atlas): ${RESET}"
 read -r SERVER_NAME
 SERVER_NAME=${SERVER_NAME:-atlas}
 
 # --- Prompt for base domain ---
-echo -ne "${WHITE}👉 Enter your base domain (default: lan): ${RESET}"
+echo -ne "${PROMPT}👉 Enter your base domain (default: lan): ${RESET}"
 read -r BASE_DOMAIN
 BASE_DOMAIN=${BASE_DOMAIN:-lan}
 
@@ -54,11 +48,11 @@ echo "   Hostname:    $SERVER_NAME"
 echo "   Base domain: $BASE_DOMAIN"
 echo "   FQDN base:   $SERVER_NAME.$BASE_DOMAIN"
 echo
-echo -ne "${WHITE}${BOLD}Proceed with these settings?${RESET} [y/N]: "
+echo -ne "${PROMPT}${HIGHLIGHT}Proceed with these settings?${RESET} [y/N]: "
 read -r CONFIRM
 CONFIRM=${CONFIRM,,} # lowercase
 if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
-  echo -e "${RED}❌ Installation aborted.${RESET}"
+  echo -e "${ERROR}❌ Installation aborted.${RESET}"
   exit 1
 fi
 
@@ -68,11 +62,11 @@ if [ -f "$CONFIG_DIR/server_config.env" ]; then
   sed -i "s/^BASE_DOMAIN=.*/BASE_DOMAIN=$BASE_DOMAIN/" "$CONFIG_DIR/server_config.env"
   sed -i "s/^FQDN_BASE=.*/FQDN_BASE=${SERVER_NAME}.${BASE_DOMAIN}/" "$CONFIG_DIR/server_config.env"
 else
-  echo -e "${RED}❌ Missing $CONFIG_DIR/server_config.env. Copy template first.${RESET}"
+  echo -e "${ERROR}❌ Missing $CONFIG_DIR/server_config.env. Copy template first.${RESET}"
   exit 1
 fi
 
-echo -e "${GREEN}✅ Server identity configured${RESET}"
+echo -e "${SUCCESS}✅ Server identity configured${RESET}"
 
 # --- Load defaults from existing .env if available ---
 if [ -f "$CONFIG_DIR/.env" ]; then
@@ -82,49 +76,49 @@ if [ -f "$CONFIG_DIR/.env" ]; then
 fi
 
 # --- Prompt for Gitea ---
-echo -ne "${WHITE}👉 Gitea admin username (default: ${GITEA_ADMIN_USER:-atlas}): ${RESET}"
+echo -ne "${PROMPT}👉 Gitea admin username (default: ${GITEA_ADMIN_USER:-atlas}): ${RESET}"
 read -r GITEA_USER
 GITEA_USER=${GITEA_USER:-${GITEA_ADMIN_USER:-atlas}}
 
-echo -ne "${WHITE}👉 Gitea admin password (default: ${GITEA_ADMIN_PASS:-changeme}): ${RESET}"
+echo -ne "${PROMPT}👉 Gitea admin password (default: ${GITEA_ADMIN_PASS:-changeme}): ${RESET}"
 read -r GITEA_PASS
 GITEA_PASS=${GITEA_PASS:-${GITEA_ADMIN_PASS:-changeme}}
 
-echo -ne "${WHITE}👉 Gitea admin email (default: ${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}): ${RESET}"
+echo -ne "${PROMPT}👉 Gitea admin email (default: ${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}): ${RESET}"
 read -r GITEA_MAIL
 GITEA_MAIL=${GITEA_MAIL:-${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}}
 
 # --- Prompt for Vaultwarden ---
 VW_TOKEN_WAS_GENERATED=false
-echo -ne "${WHITE}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
+echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
 read -r VW_TOKEN
 if [ -z "$VW_TOKEN" ]; then
   VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
   VW_TOKEN_WAS_GENERATED=true
-  echo -e "${YELLOW}🔑 Generated Vaultwarden admin token${RESET}"
+  echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
 fi
 
 # --- Prompt for Grafana ---
-echo -ne "${WHITE}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
+echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
 read -r GRAFANA_USER
 GRAFANA_USER=${GRAFANA_USER:-${GRAFANA_ADMIN_USER:-admin}}
 
-echo -ne "${WHITE}👉 Grafana admin password (default: ${GRAFANA_ADMIN_PASSWORD:-changeme}): ${RESET}"
+echo -ne "${PROMPT}👉 Grafana admin password (default: ${GRAFANA_ADMIN_PASSWORD:-changeme}): ${RESET}"
 read -r GRAFANA_PASS
 GRAFANA_PASS=${GRAFANA_PASS:-${GRAFANA_ADMIN_PASSWORD:-changeme}}
 
 # --- Prompt for ntfy ---
-echo -ne "${WHITE}👉 ntfy default access (default: ${NTFY_AUTH_DEFAULT_ACCESS:-read-only}): ${RESET}"
+echo -ne "${PROMPT}👉 ntfy default access (default: ${NTFY_AUTH_DEFAULT_ACCESS:-read-only}): ${RESET}"
 read -r NTFY_ACCESS
 NTFY_ACCESS=${NTFY_ACCESS:-${NTFY_AUTH_DEFAULT_ACCESS:-read-only}}
 
 # --- Write .env (with safety check) ---
 if [ -f "$CONFIG_DIR/.env" ]; then
-  echo -ne "${YELLOW}⚠️  Detected existing .env. Overwrite it?${RESET} [y/N]: "
+  echo -ne "${WARN}⚠️  Detected existing .env. Overwrite it?${RESET} [y/N]: "
   read -r OVERWRITE
   OVERWRITE=${OVERWRITE,,} # lowercase
   if [[ "$OVERWRITE" != "y" && "$OVERWRITE" != "yes" ]]; then
-    echo -e "${RED}❌ Keeping existing .env. Installation aborted to avoid overwriting secrets.${RESET}"
+    echo -e "${ERROR}❌ Keeping existing .env. Installation aborted to avoid overwriting secrets.${RESET}"
     exit 1
   fi
 fi
@@ -147,7 +141,7 @@ GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
 NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
 EOF
 
-echo -e "${GREEN}✅ Secrets written to $CONFIG_DIR/.env${RESET}"
+echo -e "${SUCCESS}✅ Secrets written to $CONFIG_DIR/.env${RESET}"
 
 # --- Ensure scripts are executable ---
 chmod +x "$TOOLS_DIR/bootstrap.sh"
@@ -155,16 +149,16 @@ chmod +x "$SERVICES_SCRIPTS"/*.sh
 chmod +x "$TOOLS_DIR"/*.sh
 
 # --- Run bootstrap ---
-echo -e "${CYAN}⚙️  Running bootstrap...${RESET}"
+echo -e "${INFO}⚙️  Running bootstrap...${RESET}"
 "$TOOLS_DIR/bootstrap.sh"
 
 # --- Bring everything up ---
-echo -e "${CYAN}🚀 Starting all services...${RESET}"
+echo -e "${INFO}🚀 Starting all services...${RESET}"
 make -f "$TOOLS_DIR/Makefile" up-all
 
 # --- Final summary ---
 echo
-echo -e "${GREEN}🎉 Installation complete!${RESET}"
+echo -e "${SUCCESS}🎉 Installation complete!${RESET}"
 echo
 echo -e "${BLUE}You can now access your server '$SERVER_NAME' services via:${RESET}"
 echo "  Homepage:     http://$SERVER_NAME.$BASE_DOMAIN"
@@ -179,40 +173,40 @@ echo "  ntfy:         http://ntfy.$SERVER_NAME.$BASE_DOMAIN"
 echo
 
 # --- Credentials Summary ---
-echo -e "${YELLOW}⚠️  IMPORTANT:${RESET} Save the following credentials securely."
+echo -e "${WARN}⚠️  IMPORTANT:${RESET} Save the following credentials securely."
 echo -e "   You may use a password manager, write them down, or store them however you prefer."
-echo -e "   ${BOLD}Tip:${RESET} Since Vaultwarden is installed with Atlas, you can also add them there for convenience:"
+echo -e "   ${HIGHLIGHT}Tip:${RESET} Since Vaultwarden is installed with Atlas, you can also add them there for convenience:"
 echo -e "   → Vaultwarden URL: http://vault.$SERVER_NAME.$BASE_DOMAIN"
 echo
-echo -e "   Credentials are also stored in ${BOLD}config/.env${RESET} (do not commit this file)."
+echo -e "   Credentials are also stored in ${HIGHLIGHT}config/.env${RESET} (do not commit this file)."
 echo
 
 # Vaultwarden admin token
 if [ "$VW_TOKEN_WAS_GENERATED" = true ]; then
-  echo -e "${RED}${BOLD}Vaultwarden Admin Token:${RESET} $VW_TOKEN"
+  echo -e "${ERROR}${HIGHLIGHT}Vaultwarden Admin Token:${RESET} $VW_TOKEN"
   echo "   → Required to access the Vaultwarden admin panel."
   echo
 fi
 
 # Gitea
-echo -e "${BOLD}Gitea Admin:${RESET}"
+echo -e "${HIGHLIGHT}Gitea Admin:${RESET}"
 echo "   User: $GITEA_USER"
 echo "   Pass: $GITEA_PASS"
 echo "   URL:  http://git.$SERVER_NAME.$BASE_DOMAIN"
 echo
 
 # Grafana
-echo -e "${BOLD}Grafana Admin:${RESET}"
+echo -e "${HIGHLIGHT}Grafana Admin:${RESET}"
 echo "   User: $GRAFANA_USER"
 echo "   Pass: $GRAFANA_PASS"
 echo "   URL:  http://grafana.$SERVER_NAME.$BASE_DOMAIN"
 echo
 
 # ntfy
-echo -e "${BOLD}ntfy Default Access:${RESET} $NTFY_ACCESS"
+echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} $NTFY_ACCESS"
 echo "   URL:  http://ntfy.$SERVER_NAME.$BASE_DOMAIN"
 echo
 
-echo -e "${GREEN}✅ Setup finished. Your homelab is ready!${RESET}"
+echo -e "${SUCCESS}✅ Setup finished. Your homelab is ready!${RESET}"
 echo
 

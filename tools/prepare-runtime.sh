@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# --- Colors ---
-RED="\033[0;31m"
-GREEN="\033[0;32m"
-YELLOW="\033[1;33m"
-CYAN="\033[0;36m"
-RESET="\033[0m"
+# Load shared colors
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+source "$SCRIPT_DIR/colors.sh"
 
-echo -e "${CYAN}📦 Preparing Atlas runtime folder...${RESET}"
+echo -e "${INFO}📦 Preparing Atlas runtime folder...${RESET}"
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 cd "$SCRIPT_DIR"
@@ -17,11 +14,11 @@ RUNTIME_DIR="runtime"
 
 # Check if runtime already exists
 if [ -d "$RUNTIME_DIR" ]; then
-  echo -ne "${YELLOW}⚠️  A runtime folder already exists. Overwrite it?${RESET} [y/N]: "
+  echo -ne "${WARN}⚠️  A runtime folder already exists. Overwrite it?${RESET} [y/N]: "
   read -r OVERWRITE
   OVERWRITE=${OVERWRITE,,}
   if [[ "$OVERWRITE" != "y" && "$OVERWRITE" != "yes" ]]; then
-    echo -e "${RED}❌ Aborting. Existing runtime preserved.${RESET}"
+    echo -e "${ERROR}❌ Aborting. Existing runtime preserved.${RESET}"
     exit 1
   fi
   rm -rf "$RUNTIME_DIR"
@@ -43,10 +40,11 @@ if [ -f ../config/.env ]; then
   cp ../config/.env "$RUNTIME_DIR/"
 fi
 
-# Copy troubleshooting tools
-cp ../docs/TROUBLESHOOTING.md "$RUNTIME_DIR/" 2>/dev/null || true
-cp ../tools/troubleshoot.sh "$RUNTIME_DIR/" 2>/dev/null || true
+# Copy runtime tools
 cp ../tools/sanity-check.sh "$RUNTIME_DIR/" 2>/dev/null || true
+
+# Copy shared colors
+cp ../tools/colors.sh "$RUNTIME_DIR/" 2>/dev/null || true
 
 # Create runtime Makefile
 cat > "$RUNTIME_DIR/Makefile" <<'EOF'
@@ -93,50 +91,116 @@ This folder contains the minimal files needed to **run Atlas** after installatio
 
 ## 🚀 Usage
 
-Start all services:
+Launch the runtime menu:
 \`\`\`bash
-make up-all
+./run.sh
 \`\`\`
 
-Stop all services:
+From the menu you can:
+- Start/stop all services
+- Restart one stack
+- View running containers
+- Follow logs
+- Run a sanity check
+
+Alternatively, you can use \`make\` directly:
+
 \`\`\`bash
-make down-all
+make up-all        # Start all services
+make down-all      # Stop all services
+make restart NAME=cloud   # Restart one stack
+make ps            # Show running containers
+make logs          # View logs
 \`\`\`
 
-Restart one stack:
-\`\`\`bash
-make restart NAME=cloud
-\`\`\`
-
-## 🩺 Troubleshooting
+## 🩺 Sanity Check
 
 Run:
 \`\`\`bash
-./troubleshoot.sh
+./sanity-check.sh
 \`\`\`
 
-Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed fixes.
+This will verify Docker, the network, and container health.
 EOF
 
-echo -e "${GREEN}✅ Runtime prepared in: $RUNTIME_DIR${RESET}"
+# Create runtime run.sh
+cat > "$RUNTIME_DIR/run.sh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Load shared colors
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+source "$SCRIPT_DIR/colors.sh"
+
+echo -e "${INFO}🌌 Atlas Runtime Launcher${RESET}"
+echo
+
+while true; do
+  echo "  1) Start all services"
+  echo "  2) Stop all services"
+  echo "  3) Restart one stack"
+  echo "  4) Show running containers"
+  echo "  5) View logs"
+  echo "  6) Run sanity check"
+  echo "  7) Exit"
+  echo
+  read -rp "👉 Choose an option [1-7]: " choice
+  echo
+
+  case "$choice" in
+    1)
+      make up-all
+      ;;
+    2)
+      make down-all
+      ;;
+    3)
+      read -rp "Enter stack name (proxy, dashboard, portainer, cloud, knowledge, security, monitoring, notifications): " stack
+      make restart NAME="$stack"
+      ;;
+    4)
+      make ps
+      ;;
+    5)
+      make logs
+      ;;
+    6)
+      bash ./sanity-check.sh
+      ;;
+    7)
+      echo -e "${SUCCESS}👋 Goodbye!${RESET}"
+      exit 0
+      ;;
+    *)
+      echo -e "${ERROR}❌ Invalid option. Try again.${RESET}"
+      ;;
+  esac
+
+  echo
+done
+EOF
+
+chmod +x "$RUNTIME_DIR/run.sh"
+
+echo -e "${SUCCESS}✅ Runtime prepared in: $RUNTIME_DIR${RESET}"
 
 # --- Run sanity check before cleanup ---
 if [ -f ../tools/sanity-check.sh ]; then
-  echo -e "${CYAN}🔎 Running sanity check before cleanup...${RESET}"
+  echo -e "${INFO}🔎 Running sanity check before cleanup...${RESET}"
   if ! ../tools/sanity-check.sh; then
-    echo -e "${RED}❌ Sanity check failed. Skipping dev cleanup to avoid breaking runtime.${RESET}"
-    echo -e "${YELLOW}ℹ️ You can fix the issues and re-run this script later.${RESET}"
+    echo -e "${ERROR}❌ Sanity check failed. Skipping dev cleanup to avoid breaking runtime.${RESET}"
+    echo -e "${WARN}ℹ️ You can fix the issues and re-run this script later.${RESET}"
     exit 1
   fi
 fi
 
 # --- Ask user about cleaning dev files ---
-echo -ne "${YELLOW}👉 Do you want to clean development files and keep only runtime?${RESET} [y/N]: "
+echo -ne "${WARN}👉 Do you want to clean development files and keep only runtime?${RESET} [y/N]: "
 read -r CONFIRM
 CONFIRM=${CONFIRM,,}
 
 if [[ "$CONFIRM" == "y" || "$CONFIRM" == "yes" ]]; then
-  echo -e "${CYAN}🧹 Cleaning development files...${RESET}"
+  echo -e "${INFO}🧹 Cleaning development files...${RESET}"
   for item in * ../config ../docs ../services; do
     if [ "$item" != "$RUNTIME_DIR" ]; then
       rm -rf "$item"
@@ -144,16 +208,16 @@ if [[ "$CONFIRM" == "y" || "$CONFIRM" == "yes" ]]; then
   done
   mv "$RUNTIME_DIR"/* .
   rmdir "$RUNTIME_DIR"
-  echo -e "${GREEN}✅ Cleanup complete. Only runtime files remain.${RESET}"
+  echo -e "${SUCCESS}✅ Cleanup complete. Only runtime files remain.${RESET}"
 
   # --- Ask user about removing this script ---
-  echo -ne "${YELLOW}👉 Do you also want to remove this script (prepare-runtime.sh)?${RESET} [y/N]: "
+  echo -ne "${WARN}👉 Do you also want to remove this script (prepare-runtime.sh)?${RESET} [y/N]: "
   read -r REMOVE_SELF
   REMOVE_SELF=${REMOVE_SELF,,}
   if [[ "$REMOVE_SELF" == "y" || "$REMOVE_SELF" == "yes" ]]; then
     rm -- "$0"
-    echo -e "${GREEN}✅ Script removed. Runtime is now fully clean.${RESET}"
+    echo -e "${SUCCESS}✅ Script removed. Runtime is now fully clean.${RESET}"
   fi
 else
-  echo -e "${YELLOW}ℹ️ Skipped cleanup. Runtime is inside: $RUNTIME_DIR${RESET}"
+  echo -e "${WARN}ℹ️ Skipped cleanup. Runtime is inside: $RUNTIME_DIR${RESET}"
 fi
