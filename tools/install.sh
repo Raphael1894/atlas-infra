@@ -15,22 +15,6 @@ TEMPLATES_DIR="$CONFIG_DIR/config-templates"
 TOOLS_DIR="tools"
 SERVICES_SCRIPTS="services/scripts"
 
-# --- Ensure server_config.env exists ---
-if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
-  echo -e "${WARN}⚠️  No server_config.env found. Creating one from template...${RESET}"
-  cp "$TEMPLATES_DIR/server_config.env.template" "$CONFIG_DIR/server_config.env"
-fi
-
-# --- Ensure .env exists (fallback only) ---
-if [ ! -f "$CONFIG_DIR/.env" ]; then
-  echo -e "${WARN}⚠️  No .env found. Creating one from template (will be overwritten by installer prompts)...${RESET}"
-  if [ -f "$TEMPLATES_DIR/.env.template" ]; then
-    cp "$TEMPLATES_DIR/.env.template" "$CONFIG_DIR/.env"
-  else
-    touch "$CONFIG_DIR/.env"
-  fi
-fi
-
 # --- Prompt for server hostname ---
 echo -ne "${PROMPT}👉 Enter the name of your server (default: atlas): ${RESET}"
 read -r SERVER_NAME
@@ -50,7 +34,7 @@ echo "   FQDN base:   $SERVER_NAME.$BASE_DOMAIN"
 echo
 echo -ne "${PROMPT}${HIGHLIGHT}Proceed with these settings?${RESET} [y/N]: "
 read -r CONFIRM
-CONFIRM=${CONFIRM,,} # lowercase
+CONFIRM=${CONFIRM,,}
 if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
   echo -e "${ERROR}❌ Installation aborted.${RESET}"
   exit 1
@@ -62,13 +46,12 @@ if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
   cp "$TEMPLATES_DIR/server_config.env.template" "$CONFIG_DIR/server_config.env"
 fi
 
-# --- Update server_config.env with chosen values ---
+# --- Update server_config.env ---
 sed -i "s/^ATLAS_HOSTNAME=.*/ATLAS_HOSTNAME=$SERVER_NAME/" "$CONFIG_DIR/server_config.env" || echo "ATLAS_HOSTNAME=$SERVER_NAME" >> "$CONFIG_DIR/server_config.env"
 sed -i "s/^BASE_DOMAIN=.*/BASE_DOMAIN=$BASE_DOMAIN/" "$CONFIG_DIR/server_config.env" || echo "BASE_DOMAIN=$BASE_DOMAIN" >> "$CONFIG_DIR/server_config.env"
 sed -i "s/^FQDN_BASE=.*/FQDN_BASE=${SERVER_NAME}.${BASE_DOMAIN}/" "$CONFIG_DIR/server_config.env" || echo "FQDN_BASE=${SERVER_NAME}.${BASE_DOMAIN}" >> "$CONFIG_DIR/server_config.env"
 
 echo -e "${SUCCESS}✅ Server identity configured${RESET}"
-
 
 # --- Run network configuration ---
 bash "$TOOLS_DIR/network.sh"
@@ -82,55 +65,62 @@ if [ -f "$CONFIG_DIR/.env" ]; then
   set -u
 fi
 
-# --- Prompt for Gitea ---
-echo -ne "${PROMPT}👉 Gitea admin username (default: ${GITEA_ADMIN_USER:-atlas}): ${RESET}"
-read -r GITEA_USER
-GITEA_USER=${GITEA_USER:-${GITEA_ADMIN_USER:-atlas}}
+# --- Handle .env secrets ---
+ENV_FILE="$CONFIG_DIR/.env"
 
-echo -ne "${PROMPT}👉 Gitea admin password (default: ${GITEA_ADMIN_PASS:-changeme}): ${RESET}"
-read -r GITEA_PASS
-GITEA_PASS=${GITEA_PASS:-${GITEA_ADMIN_PASS:-changeme}}
+if [ -f "$ENV_FILE" ]; then
+  echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/N]: "
+  read -r MODIFY_ENV
+  MODIFY_ENV=${MODIFY_ENV,,}
 
-echo -ne "${PROMPT}👉 Gitea admin email (default: ${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}): ${RESET}"
-read -r GITEA_MAIL
-GITEA_MAIL=${GITEA_MAIL:-${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}}
+  if [[ "$MODIFY_ENV" != "y" && "$MODIFY_ENV" != "yes" ]]; then
+    echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
+  else
+    # Prompt new values
+    echo -ne "${PROMPT}👉 Gitea admin username (default: ${GITEA_ADMIN_USER:-atlas}): ${RESET}"
+    read -r GITEA_USER
+    GITEA_USER=${GITEA_USER:-${GITEA_ADMIN_USER:-atlas}}
 
-# --- Prompt for Vaultwarden ---
-VW_TOKEN_WAS_GENERATED=false
-echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
-read -r VW_TOKEN
-if [ -z "$VW_TOKEN" ]; then
-  VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
-  VW_TOKEN_WAS_GENERATED=true
-  echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
-fi
+    echo -ne "${PROMPT}👉 Gitea admin password (default: ${GITEA_ADMIN_PASS:-changeme}): ${RESET}"
+    read -r GITEA_PASS
+    GITEA_PASS=${GITEA_PASS:-${GITEA_ADMIN_PASS:-changeme}}
 
-# --- Prompt for Grafana ---
-echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
-read -r GRAFANA_USER
-GRAFANA_USER=${GRAFANA_USER:-${GRAFANA_ADMIN_USER:-admin}}
+    echo -ne "${PROMPT}👉 Gitea admin email (default: ${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}): ${RESET}"
+    read -r GITEA_MAIL
+    GITEA_MAIL=${GITEA_MAIL:-${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}}
 
-echo -ne "${PROMPT}👉 Grafana admin password (default: ${GRAFANA_ADMIN_PASSWORD:-changeme}): ${RESET}"
-read -r GRAFANA_PASS
-GRAFANA_PASS=${GRAFANA_PASS:-${GRAFANA_ADMIN_PASSWORD:-changeme}}
+    # --- Prompt for Vaultwarden ---
+    VW_TOKEN_WAS_GENERATED=false
+    echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
+    read -r VW_TOKEN
+    if [ -z "$VW_TOKEN" ]; then
+      VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
+      VW_TOKEN_WAS_GENERATED=true
+      echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
+    fi
 
-# --- Prompt for ntfy ---
-echo -ne "${PROMPT}👉 ntfy default access (default: ${NTFY_AUTH_DEFAULT_ACCESS:-read-only}): ${RESET}"
-read -r NTFY_ACCESS
-NTFY_ACCESS=${NTFY_ACCESS:-${NTFY_AUTH_DEFAULT_ACCESS:-read-only}}
+    # --- Prompt for Grafana ---
+    echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
+    read -r GRAFANA_USER
+    GRAFANA_USER=${GRAFANA_USER:-${GRAFANA_ADMIN_USER:-admin}}
 
-# --- Write .env (with safety check) ---
-if [ -f "$CONFIG_DIR/.env" ]; then
-  echo -ne "${WARN}⚠️  Detected existing .env. Overwrite it?${RESET} [y/N]: "
-  read -r OVERWRITE
-  OVERWRITE=${OVERWRITE,,} # lowercase
-  if [[ "$OVERWRITE" != "y" && "$OVERWRITE" != "yes" ]]; then
-    echo -e "${ERROR}❌ Keeping existing .env. Installation aborted to avoid overwriting secrets.${RESET}"
-    exit 1
-  fi
-fi
+    echo -ne "${PROMPT}👉 Grafana admin password (default: ${GRAFANA_ADMIN_PASSWORD:-changeme}): ${RESET}"
+    read -r GRAFANA_PASS
+    GRAFANA_PASS=${GRAFANA_PASS:-${GRAFANA_ADMIN_PASSWORD:-changeme}}
 
-cat > "$CONFIG_DIR/.env" <<EOF
+    # --- Prompt for ntfy ---
+    echo -ne "${PROMPT}👉 ntfy default access (default: ${NTFY_AUTH_DEFAULT_ACCESS:-read-only}): ${RESET}"
+    read -r NTFY_ACCESS
+    NTFY_ACCESS=${NTFY_ACCESS:-${NTFY_AUTH_DEFAULT_ACCESS:-read-only}}
+
+    # Confirm overwrite
+    echo
+    echo -ne "${WARN}⚠️  Overwrite $ENV_FILE with these new values?${RESET} [y/N]: "
+    read -r CONFIRM_OVERWRITE
+    CONFIRM_OVERWRITE=${CONFIRM_OVERWRITE,,}
+
+    if [[ "$CONFIRM_OVERWRITE" == "y" || "$CONFIRM_OVERWRITE" == "yes" ]]; then
+      cat > "$ENV_FILE" <<EOF
 # ── Gitea ────────────────────────────────────────────────
 GITEA_ADMIN_USER=$GITEA_USER
 GITEA_ADMIN_PASS=$GITEA_PASS
@@ -147,8 +137,68 @@ GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
 # ── ntfy ─────────────────────────────────────────────────
 NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
 EOF
+      echo -e "${SUCCESS}✅ Secrets updated in $ENV_FILE${RESET}"
+    else
+      echo -e "${INFO}ℹ️  Keeping existing .env (no changes applied).${RESET}"
+    fi
+  fi
+else
+  echo -e "${INFO}ℹ️  No .env found. Creating a new one...${RESET}"
 
-echo -e "${SUCCESS}✅ Secrets written to $CONFIG_DIR/.env${RESET}"
+  # Prompt new values
+  echo -ne "${PROMPT}👉 Gitea admin username (default: atlas): ${RESET}"
+  read -r GITEA_USER
+  GITEA_USER=${GITEA_USER:-atlas}
+
+  echo -ne "${PROMPT}👉 Gitea admin password (default: changeme): ${RESET}"
+  read -r GITEA_PASS
+  GITEA_PASS=${GITEA_PASS:-changeme}
+
+  echo -ne "${PROMPT}👉 Gitea admin email (default: admin@${SERVER_NAME}.${BASE_DOMAIN}): ${RESET}"
+  read -r GITEA_MAIL
+  GITEA_MAIL=${GITEA_MAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}
+
+  VW_TOKEN_WAS_GENERATED=false
+  echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
+  read -r VW_TOKEN
+  if [ -z "$VW_TOKEN" ]; then
+    VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
+    VW_TOKEN_WAS_GENERATED=true
+    echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
+  fi
+
+  echo -ne "${PROMPT}👉 Grafana admin username (default: admin): ${RESET}"
+  read -r GRAFANA_USER
+  GRAFANA_USER=${GRAFANA_USER:-admin}
+
+  echo -ne "${PROMPT}👉 Grafana admin password (default: changeme): ${RESET}"
+  read -r GRAFANA_PASS
+  GRAFANA_PASS=${GRAFANA_PASS:-changeme}
+
+  echo -ne "${PROMPT}👉 ntfy default access (default: read-only): ${RESET}"
+  read -r NTFY_ACCESS
+  NTFY_ACCESS=${NTFY_ACCESS:-read-only}
+
+  # Write new .env
+  cat > "$ENV_FILE" <<EOF
+# ── Gitea ────────────────────────────────────────────────
+GITEA_ADMIN_USER=$GITEA_USER
+GITEA_ADMIN_PASS=$GITEA_PASS
+GITEA_ADMIN_EMAIL=$GITEA_MAIL
+
+# ── Vaultwarden ──────────────────────────────────────────
+VW_SIGNUPS_ALLOWED=false
+VW_ADMIN_TOKEN=$VW_TOKEN
+
+# ── Grafana ──────────────────────────────────────────────
+GRAFANA_ADMIN_USER=$GRAFANA_USER
+GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
+
+# ── ntfy ─────────────────────────────────────────────────
+NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
+EOF
+  echo -e "${SUCCESS}✅ Secrets written to $ENV_FILE${RESET}"
+fi
 
 # --- Run bootstrap ---
 echo -e "${INFO}⚙️  Running bootstrap...${RESET}"
@@ -184,7 +234,7 @@ echo -e "   Credentials are also stored in ${HIGHLIGHT}config/.env${RESET} (do n
 echo
 
 # Vaultwarden admin token
-if [ "$VW_TOKEN_WAS_GENERATED" = true ]; then
+if [ "${VW_TOKEN_WAS_GENERATED:-false}" = true ]; then
   echo -e "${ERROR}${HIGHLIGHT}Vaultwarden Admin Token:${RESET} $VW_TOKEN"
   echo "   → Required to access the Vaultwarden admin panel."
   echo
