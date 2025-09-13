@@ -17,5 +17,9 @@ services:
       - "traefik.http.routers.ocis.rule=Host(`cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
       - "traefik.http.routers.ocis.entrypoints=web"
     restart: unless-stopped
-    networks:
-      - atlas
+    
+networks:
+  atlas_net:
+    external: true
+    name: ${ATLAS_DOCKER_NETWORK}
+
