@@ -8,8 +8,6 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # Load shared colors
 source "$SCRIPT_DIR/../../tools/colors.sh"
 
-echo -e "${INFO}🐳 Installing Docker...${RESET}"
-
 # ── Install Docker Engine + Compose v2 ───────────────────
 
 sudo install -m 0755 -d /etc/apt/keyrings
