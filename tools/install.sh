@@ -149,6 +149,7 @@ echo -e "${SUCCESS}✅ Secrets written to $CONFIG_DIR/.env${RESET}"
 
 # --- Ensure scripts are executable ---
 chmod +x "$TOOLS_DIR/bootstrap.sh"
+chmod +x "$TOOLS_DIR/network.sh"
 chmod +x "$SERVICES_SCRIPTS"/*.sh
 chmod +x "$TOOLS_DIR"/*.sh
 
