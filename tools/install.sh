@@ -42,8 +42,13 @@ fi
 
 # --- Ensure server_config.env exists ---
 if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
-  echo -e "${WARN}⚠️  No server_config.env found. Creating one from template...${RESET}"
-  cp "$TEMPLATES_DIR/server_config.env.template" "$CONFIG_DIR/server_config.env"
+  if [ -f "$TEMPLATES_DIR/server_config.env.template" ]; then
+    echo -e "${WARN}⚠️  No server_config.env found. Creating one from template...${RESET}"
+    cp "$TEMPLATES_DIR/server_config.env.template" "$CONFIG_DIR/server_config.env"
+  else
+    echo -e "${ERROR}❌ Missing $TEMPLATES_DIR/server_config.env.template. Cannot continue.${RESET}"
+    exit 1
+  fi
 fi
 
 # --- Update server_config.env with chosen values ---
