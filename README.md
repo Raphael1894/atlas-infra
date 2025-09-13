@@ -182,7 +182,7 @@ If something goes wrong:
    tools/sanity-check.sh
    ```
 
-3. Read [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) for detailed fixes. 
+3. Read [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) for detailed fixes. 
 
 
 
@@ -200,11 +200,11 @@ Contributions, forks, and community-driven improvements are welcome.
 
 Atlas Infra includes several docs to help you use and contribute:
 
-- [README.md](./README.md) → Main guide (you are here)  
-- [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) → How to contribute and dev workflow  
-- [LICENSE](./LICENSE) → Project license (MIT)  
-- [docs/SECURITY.md](./docs/SECURITY.md) → Security policy (no support, community fixes only)  
-- [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) → Common issues and how to fix them  
+- [README](./README.md) → Main guide (you are here)  
+- [CONTRIBUTING](./docs/CONTRIBUTING.md) → How to contribute and dev workflow  
+- [LICENSE](./docs/LICENSE.md) → Project license (MIT)  
+- [SECURITY](./docs/SECURITY.md) → Security policy (no support, community fixes only)  
+- [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) → Common issues and how to fix them  
 
 👉 Start with **bash atlas.sh** to launch the menu and explore your options.
 
