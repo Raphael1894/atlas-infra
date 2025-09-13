@@ -34,6 +34,8 @@ fi
 # --- Loop until a free IP is entered ---
 while true; do
   echo -ne "${PROMPT}👉 Enter new static IP address (e.g. 192.168.1.59): ${RESET}"
+  
+  IFS=$' \t\n'   # reset IFS so dots are not treated as separators
   read -r NEW_IP
 
   # Validate IP format (basic check)
