@@ -34,9 +34,10 @@ fi
 # --- Loop until a free IP is entered ---
 while true; do
   echo -ne "${PROMPT}👉 Enter new static IP address (e.g. 192.168.1.59): ${RESET}"
-  
-  IFS=$' \t\n'   # reset IFS so dots are not treated as separators
-  read -r NEW_IP
+  unset IFS
+  read -r NEW_IP || true
+
+  echo -e "${INFO}DEBUG: Captured IP = '$NEW_IP'${RESET}"
 
   # Validate IP format (basic check)
   if [[ ! "$NEW_IP" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
@@ -45,6 +46,7 @@ while true; do
   fi
 
   NEW_IP_CIDR="${NEW_IP}/24"
+  echo -e "${INFO}DEBUG: Built CIDR = '$NEW_IP_CIDR'${RESET}"
 
   if ping -c1 -W1 "$NEW_IP" &>/dev/null; then
     echo -e "${ERROR}❌ IP $NEW_IP is already in use.${RESET}"
