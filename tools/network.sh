@@ -86,3 +86,8 @@ echo
 echo -e "${WARN}⚠️ Make sure you are on console/SSH with fallback access before applying.${RESET}"
 echo
 echo -e "${SUCCESS}✅ Configuration snippet generated. Manual action required.${RESET}"
+echo
+
+# --- Pause before exit ---
+read -rp "👉 Press Enter to return to the menu..." _
+clear || tput clear || true
