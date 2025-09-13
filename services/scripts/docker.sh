@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Load shared colors
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-source "$SCRIPT_DIR/../../tools/colors.sh"
-
 # ── Setup ────────────────────────────────────────────────
 
 # Resolve absolute path to this script
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 # Load shared colors
-source "$SCRIPT_DIR/colors.sh"
+source "$SCRIPT_DIR/../../tools/colors.sh"
 
 echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
 
