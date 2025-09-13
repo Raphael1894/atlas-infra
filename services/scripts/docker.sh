@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Load shared colors
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-source "$SCRIPT_DIR/../tools/colors.sh"
+source "$SCRIPT_DIR/../../tools/colors.sh"
 
 # ── Setup ────────────────────────────────────────────────
 
