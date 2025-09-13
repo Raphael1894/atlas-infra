@@ -35,6 +35,13 @@ fi
 while true; do
   echo -ne "${PROMPT}👉 Enter new static IP address (e.g. 192.168.1.59): ${RESET}"
   read -r NEW_IP
+
+  # Validate IP format (basic check)
+  if [[ ! "$NEW_IP" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+    echo -e "${ERROR}❌ Invalid IP address format. Please enter like 192.168.1.59${RESET}"
+    continue
+  fi
+
   NEW_IP_CIDR="${NEW_IP}/24"
 
   if ping -c1 -W1 "$NEW_IP" &>/dev/null; then
