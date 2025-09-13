@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Load shared colors
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-source "$SCRIPT_DIR/colors.sh"
-
 # ── Setup ────────────────────────────────────────────────
 
-# Resolve absolute path to this script
+# Resolve absolute path to this script (tools/)
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-# Load shared colors
+# Load shared colors (tools/colors.sh)
 source "$SCRIPT_DIR/colors.sh"
 
 echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
@@ -51,8 +47,8 @@ sudo bash services/scripts/firewall.sh
 # ── Docker network ───────────────────────────────────────
 
 echo -e "${INFO}🌐 Ensuring Docker network '$ATLAS_DOCKER_NETWORK' exists...${RESET}"
-if ! docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
-  docker network create "$ATLAS_DOCKER_NETWORK"
+if ! sudo docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
+  sudo docker network create "$ATLAS_DOCKER_NETWORK"
   echo -e "${SUCCESS}✅ Created network '$ATLAS_DOCKER_NETWORK'${RESET}"
 else
   echo -e "${SUCCESS}✅ Network '$ATLAS_DOCKER_NETWORK' already exists${RESET}"
@@ -62,7 +58,7 @@ fi
 # ── Core services ────────────────────────────────────────
 
 echo -e "${INFO}🚀 Starting core services...${RESET}"
-bash services/scripts/atlas.sh
+sudo bash services/scripts/atlas.sh
 
 
 # ── Done ─────────────────────────────────────────────────
