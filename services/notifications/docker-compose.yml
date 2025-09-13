@@ -2,6 +2,7 @@ services:
   ntfy:
     image: binwiederhier/ntfy:latest
     container_name: ntfy
+    command: serve
     environment:
       - TZ=${TZ}
       - NTFY_BASE_URL=http://ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
@@ -15,7 +16,6 @@ services:
     restart: unless-stopped
     networks:
       - atlas
-
 
 networks:
   atlas:

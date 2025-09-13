@@ -5,6 +5,11 @@ services:
     environment:
       - OCIS_INSECURE=true
       - OCIS_URL=http://cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+      - OCIS_JWT_SECRET=${OCIS_JWT_SECRET}
+      - OCIS_MACHINE_AUTH_API_KEY=${OCIS_MACHINE_AUTH_API_KEY}
+      - OCIS_ADMIN_USER_ID=958d7151-528b-42b1-9e3a-fc9e7f1f5d34
+      - OCIS_SYSTEM_USER_ID=admin
+      - PROXY_USER_ID=admin
     volumes:
       - ${DATA_ROOT}/ocis:/var/lib/ocis
     labels:
@@ -14,9 +19,3 @@ services:
     restart: unless-stopped
     networks:
       - atlas
-
-
-networks:
-  atlas:
-    external: true
-    name: ${ATLAS_DOCKER_NETWORK}

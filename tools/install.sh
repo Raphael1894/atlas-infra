@@ -104,6 +104,34 @@ if [ -f "$ENV_FILE" ]; then
       echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
     fi
 
+    # --- Prompt for OCIS (OwnCloud Infinite Scale) ---
+    OCIS_JWT_SECRET_WAS_GENERATED=false
+    OCIS_MACHINE_KEY_WAS_GENERATED=false
+
+    echo -ne "${PROMPT}👉 oCIS admin username (default: ${OCIS_ADMIN_USER:-admin}): ${RESET}"
+    read -r OCIS_USER
+    OCIS_USER=${OCIS_USER:-${OCIS_ADMIN_USER:-admin}}
+
+    echo -ne "${PROMPT}👉 oCIS admin password (default: ${OCIS_ADMIN_PASS:-changeme}): ${RESET}"
+    read -r OCIS_PASS
+    OCIS_PASS=${OCIS_PASS:-${OCIS_ADMIN_PASS:-changeme}}
+
+    # Fixed/default IDs from oCIS docs
+    OCIS_ADMIN_USER_ID="958d7151-528b-42b1-9e3a-fc9e7f1f5d34"
+    OCIS_SYSTEM_USER_ID="admin"
+    PROXY_USER_ID="admin"
+
+    # Generate only if missing
+    if [ -z "${OCIS_JWT_SECRET:-}" ]; then
+      OCIS_JWT_SECRET=$(openssl rand -hex 32)
+      OCIS_JWT_SECRET_WAS_GENERATED=true
+    fi
+
+    if [ -z "${OCIS_MACHINE_AUTH_API_KEY:-}" ]; then
+      OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
+      OCIS_MACHINE_KEY_WAS_GENERATED=true
+    fi
+
     # --- Prompt for Grafana ---
     echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
     read -r GRAFANA_USER
@@ -141,7 +169,17 @@ GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
 
 # ── ntfy ─────────────────────────────────────────────────
 NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
+
+# ── OCIS (OwnCloud Infinite Scale) ──────────────────────
+OCIS_ADMIN_USER=$OCIS_USER
+OCIS_ADMIN_PASS=$OCIS_PASS
+OCIS_ADMIN_USER_ID=$OCIS_ADMIN_USER_ID
+OCIS_SYSTEM_USER_ID=$OCIS_SYSTEM_USER_ID
+PROXY_USER_ID=$PROXY_USER_ID
+OCIS_JWT_SECRET=$OCIS_JWT_SECRET
+OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 EOF
+
       echo -e "${SUCCESS}✅ Secrets updated in $ENV_FILE${RESET}"
     else
       echo -e "${INFO}ℹ️  Keeping existing .env (no changes applied).${RESET}"
@@ -172,6 +210,24 @@ else
     echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
   fi
 
+  # --- Prompt for OCIS ---
+  echo -ne "${PROMPT}👉 oCIS admin username (default: admin): ${RESET}"
+  read -r OCIS_USER
+  OCIS_USER=${OCIS_USER:-admin}
+
+  echo -ne "${PROMPT}👉 oCIS admin password (default: changeme): ${RESET}"
+  read -r OCIS_PASS
+  OCIS_PASS=${OCIS_PASS:-changeme}
+
+  # Fixed/default IDs from oCIS docs
+  OCIS_ADMIN_USER_ID="958d7151-528b-42b1-9e3a-fc9e7f1f5d34"
+  OCIS_SYSTEM_USER_ID="admin"
+  PROXY_USER_ID="admin"
+
+  # Auto-generate secrets
+  OCIS_JWT_SECRET=$(openssl rand -hex 32)
+  OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
+
   echo -ne "${PROMPT}👉 Grafana admin username (default: admin): ${RESET}"
   read -r GRAFANA_USER
   GRAFANA_USER=${GRAFANA_USER:-admin}
@@ -201,6 +257,15 @@ GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
 
 # ── ntfy ─────────────────────────────────────────────────
 NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
+
+# ── OCIS (OwnCloud Infinite Scale) ──────────────────────
+OCIS_ADMIN_USER=$OCIS_USER
+OCIS_ADMIN_PASS=$OCIS_PASS
+OCIS_ADMIN_USER_ID=$OCIS_ADMIN_USER_ID
+OCIS_SYSTEM_USER_ID=$OCIS_SYSTEM_USER_ID
+PROXY_USER_ID=$PROXY_USER_ID
+OCIS_JWT_SECRET=$OCIS_JWT_SECRET
+OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 EOF
   echo -e "${SUCCESS}✅ Secrets written to $ENV_FILE${RESET}"
 fi
@@ -259,12 +324,28 @@ echo "   Pass: $GRAFANA_PASS"
 echo "   URL:  http://grafana.$SERVER_NAME.$BASE_DOMAIN"
 echo
 
+# OCIS
+echo -e "${HIGHLIGHT}OCIS Admin:${RESET}"
+echo "   User: $OCIS_USER"
+echo "   Pass: $OCIS_PASS"
+echo "   URL:  http://cloud.$SERVER_NAME.$BASE_DOMAIN"
+echo
+
+if [ "${OCIS_JWT_SECRET_WAS_GENERATED:-false}" = true ]; then
+  echo -e "${ERROR}${HIGHLIGHT}OCIS JWT Secret:${RESET} $OCIS_JWT_SECRET"
+  echo "   → Required for internal service authentication."
+  echo
+fi
+
+if [ "${OCIS_MACHINE_KEY_WAS_GENERATED:-false}" = true ]; then
+  echo -e "${ERROR}${HIGHLIGHT}OCIS Machine Auth API Key:${RESET} $OCIS_MACHINE_AUTH_API_KEY"
+  echo "   → Required for service-to-service authentication."
+  echo
+fi
+
 # ntfy
 echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} $NTFY_ACCESS"
 echo "   URL:  http://ntfy.$SERVER_NAME.$BASE_DOMAIN"
-echo
-
-echo -e "${SUCCESS}✅ Setup finished. Your homelab is ready!${RESET}"
 echo
 
 # --- Post-install reminder ---

@@ -64,6 +64,23 @@ fi
 echo -e "${INFO}🚀 Starting core services...${RESET}"
 sudo bash "$REPO_ROOT/services/scripts/atlas.sh"
 
+# ── Fix permissions for monitoring ───────────────────────
+
+echo -e "${INFO}🔧 Ensuring correct permissions for Grafana & Prometheus...${RESET}"
+
+# Grafana (UID 472 inside container)
+sudo mkdir -p "${DATA_ROOT}/grafana"
+sudo chown -R 472:472 "${DATA_ROOT}/grafana"
+sudo chmod -R 755 "${DATA_ROOT}/grafana"
+
+# Prometheus (UID 65534 inside container: nobody:nogroup)
+sudo mkdir -p "${DATA_ROOT}/prometheus"
+sudo chown -R 65534:65534 "${DATA_ROOT}/prometheus"
+sudo chmod -R 755 "${DATA_ROOT}/prometheus"
+
+echo -e "${SUCCESS}✅ Permissions fixed for Grafana & Prometheus${RESET}"
+
+
 # ── Done ─────────────────────────────────────────────────
 
 echo -e "${SUCCESS}✅ Bootstrap complete!${RESET}"
