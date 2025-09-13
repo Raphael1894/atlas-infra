@@ -10,7 +10,7 @@ include $(MAKEFILE_DIR)/../config/server_config.env
 export
 
 COMPOSE = sudo docker compose
-SERVICES_DIR = ../services
+SERVICES_DIR = $(MAKEFILE_DIR)/../services
 NET ?= $(ATLAS_DOCKER_NETWORK)
 
 .PHONY: help up up-core up-all down-all ps logs restart clean
