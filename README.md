@@ -31,7 +31,7 @@ cd atlas-infra
 
 ### 3. Launch Atlas
 ```bash
-./atlas.sh
+bash atlas.sh
 ```
 
 👉 This starts the **Atlas Launcher** menu.  

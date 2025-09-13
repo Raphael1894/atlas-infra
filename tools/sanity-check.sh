@@ -45,17 +45,21 @@ fi
 
 # 4. Containers running
 echo
-echo -e "${INFO}🔎 Checking containers...${RESET}"
-RUNNING_CONTAINERS=$(docker ps --format '{{.Names}}' | wc -l)
-if [ "$RUNNING_CONTAINERS" -eq 0 ]; then
-  echo -e "${ERROR}❌ No running containers found${RESET}"
+echo -e "${INFO}🔎 Checking Atlas containers (network: $ATLAS_DOCKER_NETWORK)...${RESET}"
+ATLAS_CONTAINERS=$(docker ps --filter "network=$ATLAS_DOCKER_NETWORK" --format '{{.Names}}')
+
+if [ -z "$ATLAS_CONTAINERS" ]; then
+  echo -e "${ERROR}❌ No Atlas containers found on network '$ATLAS_DOCKER_NETWORK'${RESET}"
   FAIL=1
 else
-  docker ps --format '   {{.Names}} → {{.Status}}' | while read -r line; do
-    if [[ "$line" == *"Up"* ]]; then
-      echo -e "${SUCCESS}✅ $line${RESET}"
+  for cname in $ATLAS_CONTAINERS; do
+    STATUS=$(docker inspect --format '{{.State.Status}}' "$cname" 2>/dev/null || echo "unknown")
+    HEALTH=$(docker inspect --format '{{.State.Health.Status}}' "$cname" 2>/dev/null || true)
+
+    if [[ "$STATUS" == "running" && ( -z "$HEALTH" || "$HEALTH" == "healthy" ) ]]; then
+      echo -e "${SUCCESS}✅ $cname → $STATUS ${HEALTH:+($HEALTH)}${RESET}"
     else
-      echo -e "${ERROR}❌ $line${RESET}"
+      echo -e "${ERROR}❌ $cname → $STATUS ${HEALTH:+($HEALTH)}${RESET}"
       FAIL=1
     fi
   done

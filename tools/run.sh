@@ -5,7 +5,6 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 source "$SCRIPT_DIR/colors.sh"
 
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 TOOLS_DIR="$SCRIPT_DIR"
 
 # --- Clear terminal ---
@@ -14,7 +13,6 @@ clear || tput clear || true
 # --- Check required scripts ---
 REQUIRED_FILES=(
   "install.sh"
-  "bootstrap.sh"
   "prepare-runtime.sh"
   "sanity-check.sh"
   "troubleshoot.sh"
@@ -45,6 +43,120 @@ if [ "$MISSING" -ne 0 ]; then
   exit 1
 fi
 
+# --- Documentation submenu ---
+show_docs_menu() {
+  while true; do
+    clear || tput clear || true
+    echo -e "${PROMPT}${HIGHLIGHT}📖 Documentation Menu${RESET}"
+    echo "  1) View README ('q' to exit)"
+    echo "  2) View TROUBLESHOOTING ('q' to exit)"
+    echo "  3) View CONTRIBUTING ('q' to exit)"
+    echo "  4) Export documentation"
+    echo "  5) Back"
+    echo
+    read -rp "👉 Choose an option [1-5]: " doc_choice
+    echo
+
+    case "$doc_choice" in
+      1) show_doc "README.md" ;;
+      2) show_doc "docs/TROUBLESHOOTING.md" ;;
+      3) show_doc "docs/CONTRIBUTING.md" ;;
+      4) export_docs_menu ;;
+      5) clear || tput clear || true; return ;;
+      *) echo -e "${ERROR}❌ Invalid option. Try again.${RESET}" ;;
+    esac
+    echo
+    read -rp "👉 Press Enter to return to docs menu..." _
+  done
+}
+
+show_doc() {
+  local doc_file=$1
+  if [ ! -f "$doc_file" ]; then
+    echo -e "${ERROR}❌ File not found: $doc_file${RESET}"
+    return
+  fi
+  echo -e "${INFO}📖 Showing $(basename "$doc_file") in terminal:${RESET}"
+  echo
+  less "$doc_file"
+}
+
+export_docs_menu() {
+  while true; do
+    clear || tput clear || true
+    echo -e "${PROMPT}${HIGHLIGHT}📤 Export Documentation${RESET}"
+    echo "  1) Export README"
+    echo "  2) Export TROUBLESHOOTING"
+    echo "  3) Export CONTRIBUTING"
+    echo "  4) Export ALL"
+    echo "  5) Back"
+    echo
+    read -rp "👉 Choose an option [1-5]: " export_choice
+    echo
+
+    case "$export_choice" in
+      1) export_doc "README.md" ;;
+      2) export_doc "docs/TROUBLESHOOTING.md" ;;
+      3) export_doc "docs/CONTRIBUTING.md" ;;
+      4) export_doc "README.md" && export_doc "docs/TROUBLESHOOTING.md" && export_doc "docs/CONTRIBUTING.md" ;;
+      5) return ;;
+      *) echo -e "${ERROR}❌ Invalid option.${RESET}" ;;
+    esac
+    echo
+    read -rp "👉 Press Enter to return to export menu..." _
+  done
+}
+
+export_doc() {
+  local doc_file=$1
+  if [ ! -f "$doc_file" ]; then
+    echo -e "${ERROR}❌ File not found: $doc_file${RESET}"
+    return 1
+  fi
+
+  CLIENT_IP=$(echo $SSH_CONNECTION | awk '{print $1}')
+  LOCAL_USER=${USER}
+
+  # Clean screen before asking
+  clear || tput clear || true
+  echo -e "${PROMPT}👉 What OS is your local machine running?${RESET}"
+  echo "   1) Linux / macOS (scp)"
+  echo "   2) Windows (manual copy with WinSCP)"
+  echo "   3) Cancel"
+  read -rp "Choose [1-3]: " os_choice
+
+  case "$os_choice" in
+    1)
+      read -rp "👉 Local username [${LOCAL_USER}]: " USERNAME
+      USERNAME=${USERNAME:-$LOCAL_USER}
+      read -rp "👉 Destination folder [~/AtlasDocs]: " FOLDER
+      FOLDER=${FOLDER:-~/AtlasDocs}
+      echo -e "${INFO}📤 Exporting $(basename "$doc_file") to $USERNAME@$CLIENT_IP:$FOLDER/${RESET}"
+            if scp -o ConnectTimeout=5 "$doc_file" "$USERNAME@$CLIENT_IP:$FOLDER/"; then
+        echo -e "${SUCCESS}✅ Exported successfully!${RESET}"
+      else
+        echo -e "${ERROR}❌ Export failed. It looks like your client may not support SCP.${RESET}"
+        echo -e "${WARN}💡 If you are on Windows, please choose option 2 (manual export).${RESET}"
+        sleep 3
+      fi
+      ;;
+    2)
+      echo -e "${INFO}💡 On your Windows computer, use WinSCP or PuTTY to connect to:${RESET}"
+      echo "   Host: $CLIENT_IP"
+      echo "   User: $USER"
+      echo "   Copy file: $(realpath "$doc_file")"
+      echo
+      echo -e "${WARN}⚠️ Windows export must be done manually.${RESET}"
+      ;;
+    3)
+      echo -e "${WARN}⚠️ Export cancelled.${RESET}"
+      ;;
+    *)
+      echo -e "${ERROR}❌ Invalid option.${RESET}"
+      ;;
+  esac
+}
+
 # --- Banner ---
 echo -e "${INFO}🌌 Atlas Launcher${RESET}"
 echo
@@ -53,12 +165,12 @@ echo
 while true; do
   echo -e "${PROMPT}${HIGHLIGHT}What would you like to do?${RESET}"
   echo "  1) Install Atlas (setup configs, secrets, services)"
-  echo "  2) Bootstrap (install system deps, Docker, firewall, tailscale)"
-  echo "  3) Prepare runtime (keeps only files needed to run the server)"
-  echo "  4) Run sanity check"
-  echo "  5) Troubleshoot Atlas"
-  echo "  6) Start services (make up-all)"
-  echo "  7) Stop services (make down-all)"
+  echo "  2) Prepare runtime (keeps only files needed to run the server)"
+  echo "  3) Run sanity check"
+  echo "  4) Troubleshoot Atlas"
+  echo "  5) Start services (make up-all)"
+  echo "  6) Stop services (make down-all)"
+  echo "  7) Documentation"
   echo "  8) Exit"
   echo
   read -rp "👉 Choose an option [1-8]: " choice
@@ -66,12 +178,12 @@ while true; do
 
   case "$choice" in
     1) bash "$TOOLS_DIR/install.sh" ;;
-    2) bash "$TOOLS_DIR/bootstrap.sh" ;;
-    3) bash "$TOOLS_DIR/prepare-runtime.sh" ;;
-    4) bash "$TOOLS_DIR/sanity-check.sh" ;;
-    5) bash "$TOOLS_DIR/troubleshoot.sh" ;;
-    6) make -f "$TOOLS_DIR/Makefile" up-all ;;
-    7) make -f "$TOOLS_DIR/Makefile" down-all ;;
+    2) bash "$TOOLS_DIR/prepare-runtime.sh" ;;
+    3) bash "$TOOLS_DIR/sanity-check.sh" ;;
+    4) bash "$TOOLS_DIR/troubleshoot.sh" ;;
+    5) make -f "$TOOLS_DIR/Makefile" up-all ;;
+    6) make -f "$TOOLS_DIR/Makefile" down-all ;;
+    7) show_docs_menu ;;
     8)
       echo -e "${SUCCESS}👋 Goodbye!${RESET}"
       exit 0

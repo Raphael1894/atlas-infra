@@ -7,7 +7,6 @@ source "$SCRIPT_DIR/colors.sh"
 
 echo -e "${INFO}🩺 Atlas Troubleshooting Script${RESET}"
 
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 cd "$SCRIPT_DIR"
 
 if [ ! -f "$SCRIPT_DIR/../config/server_config.env" ]; then
@@ -36,10 +35,15 @@ check_step () {
   else
     echo -e "${ERROR}❌ FAILED${RESET}"
     echo -e "   ${WARN}Hint:${RESET} $hint"
+
     if docker ps -a --format '{{.Names}}' | grep -q "$service_name"; then
       docker logs --tail=200 "$service_name" &> "logs/${service_name}.log" || true
       echo -e "   ${INFO}Logs saved to:${RESET} logs/${service_name}.log"
+    else
+      echo "No container found for $service_name" > "logs/${service_name}.log"
+      echo -e "   ${WARN}No container found — created empty log file at logs/${service_name}.log${RESET}"
     fi
+
     failures=$((failures+1))
   fi
 }
