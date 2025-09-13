@@ -2,37 +2,41 @@
 set -euo pipefail
 
 # ── Setup ────────────────────────────────────────────────
+
+# Resolve absolute path to this script (tools/) and repo root
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-REPO_ROOT="$SCRIPT_DIR/.."
+REPO_ROOT=$(realpath "$SCRIPT_DIR/..")
 
 # Load shared colors
 source "$SCRIPT_DIR/colors.sh"
 
 echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
+echo "DEBUG: SCRIPT_DIR=$SCRIPT_DIR"
+echo "DEBUG: REPO_ROOT=$REPO_ROOT"
 
 cd "$REPO_ROOT"
 
 # ── Configs ──────────────────────────────────────────────
 
-echo "DEBUG: REPO_ROOT=$REPO_ROOT"
-echo "DEBUG: Looking for config at $CONFIG_FILE"
-ls -l "$REPO_ROOT/config" || echo "DEBUG: config dir not found"
-
-
 CONFIG_FILE="$REPO_ROOT/config/server_config.env"
 SECRETS_FILE="$REPO_ROOT/config/.env"
+
+echo "DEBUG: CONFIG_FILE=$CONFIG_FILE"
+echo "DEBUG: SECRETS_FILE=$SECRETS_FILE"
 
 if [ ! -f "$CONFIG_FILE" ]; then
   echo -e "${ERROR}❌ Missing $CONFIG_FILE. Copy template first.${RESET}"
   exit 1
 fi
 
+# Load configs
 set -a
 source "$CONFIG_FILE"
 [ -f "$SECRETS_FILE" ] && source "$SECRETS_FILE"
 set +a
 
 # ── Run setup scripts ────────────────────────────────────
+
 echo -e "${INFO}📦 Installing base system packages...${RESET}"
 sudo bash "$REPO_ROOT/services/scripts/base.sh"
 
@@ -46,6 +50,7 @@ echo -e "${INFO}🛡️  Configuring firewall...${RESET}"
 sudo bash "$REPO_ROOT/services/scripts/firewall.sh"
 
 # ── Docker network ───────────────────────────────────────
+
 echo -e "${INFO}🌐 Ensuring Docker network '$ATLAS_DOCKER_NETWORK' exists...${RESET}"
 if ! sudo docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
   sudo docker network create "$ATLAS_DOCKER_NETWORK"
@@ -55,8 +60,10 @@ else
 fi
 
 # ── Core services ────────────────────────────────────────
+
 echo -e "${INFO}🚀 Starting core services...${RESET}"
 sudo bash "$REPO_ROOT/services/scripts/atlas.sh"
 
 # ── Done ─────────────────────────────────────────────────
+
 echo -e "${SUCCESS}✅ Bootstrap complete!${RESET}"
