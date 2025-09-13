@@ -1,9 +1,12 @@
 # Atlas Infra Makefile
 # Manages modular Docker Compose stacks
 
+# Makefile directory (absolute)
+MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 # Load configs
-include ../config/server_config.env
--include ../config/.env
+include $(MAKEFILE_DIR)/../config/server_config.env
+-include $(MAKEFILE_DIR)/../config/.env
 export
 
 COMPOSE = sudo docker compose

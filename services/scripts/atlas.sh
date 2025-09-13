@@ -15,4 +15,8 @@ fi
 
 # Always call the correct Makefile
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." &>/dev/null && pwd)
-make -f "$REPO_ROOT/tools/Makefile" up-core
+
+# Forward any arguments to the Makefile, default to up-core
+TARGET=${1:-up-core}
+shift || true
+make -f "$REPO_ROOT/tools/Makefile" "$TARGET" "$@"
