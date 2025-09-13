@@ -1,7 +1,10 @@
 # Atlas Infra Makefile
 # Manages modular Docker Compose stacks
 
-include .env
+# Load configs
+include server_config.env
+-include .env
+export
 
 COMPOSE = docker compose
 NET ?= $(ATLAS_DOCKER_NETWORK)

@@ -13,7 +13,9 @@ set +a
 NET=${ATLAS_DOCKER_NETWORK:-atlas_net}
 
 
-docker network ls --format '{{.Name}}' | grep -q "^${NET}$" || docker network create "$NET"
-
+NET=${ATLAS_DOCKER_NETWORK:-atlas_net}
+if ! docker network ls --format '{{.Name}}' | grep -q "^${NET}$"; then
+  docker network create "$NET"
+fi
 
 make up-core

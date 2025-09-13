@@ -1,1 +1,4 @@
 .env
+*.backup-*
+/srv/atlas
+/srv/atlas-backups
