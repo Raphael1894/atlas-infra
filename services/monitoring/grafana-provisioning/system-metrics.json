@@ -1,0 +1,110 @@
+{
+  "id": null,
+  "title": "System Metrics",
+  "tags": ["atlas", "system"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "CPU Usage (%)",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance)(irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Usage (%)",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Disk Usage (%)",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "(node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\"} - node_filesystem_free_bytes{fstype!~\"tmpfs|overlay\"}) / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\"} * 100",
+          "legendFormat": "{{mountpoint}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Docker Container CPU",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{container!=\"\", image!=\"\"}[5m]) * 100",
+          "legendFormat": "{{container}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Docker Container Memory (MB)",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{container!=\"\", image!=\"\"} / 1024 / 1024",
+          "legendFormat": "{{container}}"
+        }
+      ]
+    },
+        {
+      "type": "timeseries",
+      "title": "Traefik Requests/sec",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "rate(traefik_entrypoint_requests_total[1m])",
+          "legendFormat": "{{entrypoint}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Traefik HTTP 4xx Errors/sec",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "rate(traefik_entrypoint_requests_total{code=~\"4..\"}[5m])",
+          "legendFormat": "{{entrypoint}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Traefik HTTP 5xx Errors/sec",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "rate(traefik_entrypoint_requests_total{code=~\"5..\"}[5m])",
+          "legendFormat": "{{entrypoint}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Traefik Open Connections",
+      "datasource": {"type": "prometheus", "uid": "Prometheus"},
+      "targets": [
+        {
+          "expr": "traefik_entrypoint_open_connections",
+          "legendFormat": "{{entrypoint}}"
+        }
+      ]
+    }
+  ]
+}

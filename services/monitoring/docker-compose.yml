@@ -13,38 +13,20 @@ services:
     restart: unless-stopped
     networks: [atlas]
 
-
-  vmagent:
-    image: victoriametrics/vmagent:v1.103.0
-    container_name: vmagent
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.103.0
+    container_name: victoriametrics
     command:
-      - "-promscrape.config=/etc/prometheus/prometheus.yml"
-      - "-remoteWrite.url=http://vminsert:8480/insert/0/prometheus"
+      - "-storageDataPath=/victoria-metrics-data"
+      - "-retentionPeriod=1y"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    depends_on: [vminsert]
+      - ${DATA_ROOT}/victoriametrics:/victoria-metrics-data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.victoria.rule=Host(`vm.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.victoria.entrypoints=web"
+    restart: unless-stopped
     networks: [atlas]
-
-
-  vminsert:
-    image: victoriametrics/vminsert:v1.103.0
-    container_name: vminsert
-    networks: [atlas]
-
-
-  vmselect:
-    image: victoriametrics/vmselect:v1.103.0
-    container_name: vmselect
-    networks: [atlas]
-
-
-  vmstorage:
-    image: victoriametrics/vmstorage:v1.103.0
-    container_name: vmstorage
-    volumes:
-      - ${DATA_ROOT}/victoriametrics:/storage
-    networks: [atlas]
-
 
   grafana:
     image: grafana/grafana:10.4.5
@@ -59,10 +41,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.grafana.rule=Host(`grafana.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
       - "traefik.http.routers.grafana.entrypoints=web"
-    depends_on: [prometheus]
+    depends_on: [prometheus, victoriametrics]
     restart: unless-stopped
     networks: [atlas]
-
 
   alertmanager:
     image: prom/alertmanager:v0.27.0
@@ -77,7 +58,6 @@ services:
     restart: unless-stopped
     networks: [atlas]
 
-
   node_exporter:
     image: prom/node-exporter:v1.8.1
     container_name: node_exporter
@@ -88,7 +68,6 @@ services:
     volumes:
       - /:/host:ro,rslave
     restart: unless-stopped
-
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
@@ -101,7 +80,6 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     restart: unless-stopped
     networks: [atlas]
-
 
 networks:
   atlas:
