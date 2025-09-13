@@ -16,7 +16,7 @@ fi
 CURRENT_IP=$(ip -4 addr show dev "$DEFAULT_IFACE" | awk '/inet / {print $2}' | cut -d/ -f1)
 GATEWAY=$(ip route | awk '/default/ {print $3; exit}')
 
-# --- Check if using DHCP (simple netplan check) ---
+# --- Check if using DHCP (basic check) ---
 DHCP_MODE="unknown"
 if grep -qi 'dhcp4: true' /etc/netplan/*.yaml 2>/dev/null; then
   DHCP_MODE="dhcp"
@@ -45,9 +45,9 @@ fi
 
 # --- Loop until a free IP is entered ---
 while true; do
-  echo -ne "${PROMPT}👉 Enter new static IP address (CIDR, e.g. 192.168.1.100/24): ${RESET}"
-  read -r NEW_IP_CIDR
-  NEW_IP=${NEW_IP_CIDR%/*}
+  echo -ne "${PROMPT}👉 Enter new static IP address (e.g. 192.168.1.59): ${RESET}"
+  read -r NEW_IP
+  NEW_IP_CIDR="${NEW_IP}/24"
 
   if ping -c1 -W1 "$NEW_IP" &>/dev/null; then
     echo -e "${ERROR}❌ IP $NEW_IP is already in use.${RESET}"
@@ -64,10 +64,10 @@ while true; do
   fi
 done
 
-# --- Prompt for DNS ---
-echo -ne "${PROMPT}👉 Enter DNS servers (comma separated, default: 1.1.1.1,8.8.8.8): ${RESET}"
-read -r DNS_SERVERS
-DNS_SERVERS=${DNS_SERVERS:-"1.1.1.1,8.8.8.8"}
+# --- Ask for route (gateway) ---
+echo -ne "${PROMPT}👉 Enter gateway IP (default: 192.168.1.254): ${RESET}"
+read -r NEW_GATEWAY
+NEW_GATEWAY=${NEW_GATEWAY:-192.168.1.254}
 
 # --- Backup netplan config ---
 NETPLAN_FILE="/etc/netplan/01-atlas-network.yaml"
@@ -86,10 +86,15 @@ network:
       dhcp4: no
       addresses:
         - $NEW_IP_CIDR
-      gateway4: $GATEWAY
       nameservers:
-        addresses: [${DNS_SERVERS//,/ }]
+        addresses: [1.1.1.1, 8.8.8.8]
+      routes:
+        - to: default
+          via: $NEW_GATEWAY
 EOF
+
+# --- Secure permissions ---
+sudo chmod 600 "$NETPLAN_FILE"
 
 # --- Apply configuration ---
 echo -e "${INFO}⚙️  Applying new network configuration...${RESET}"
@@ -97,6 +102,7 @@ if ! sudo netplan apply; then
   echo -e "${ERROR}❌ Failed to apply netplan config. Rolling back...${RESET}"
   if [ -f "$BACKUP_FILE" ]; then
     sudo cp "$BACKUP_FILE" "$NETPLAN_FILE"
+    sudo chmod 600 "$NETPLAN_FILE"
     sudo netplan apply || true
   fi
   echo -e "${ERROR}⚠️  Please update your network configuration manually.${RESET}"
@@ -115,6 +121,7 @@ else
   echo -e "${WARN}⚠️  Rolling back to previous configuration...${RESET}"
   if [ -f "$BACKUP_FILE" ]; then
     sudo cp "$BACKUP_FILE" "$NETPLAN_FILE"
+    sudo chmod 600 "$NETPLAN_FILE"
     sudo netplan apply || true
   fi
   echo -e "${ERROR}⚠️  Please try again or update your IP manually.${RESET}"
