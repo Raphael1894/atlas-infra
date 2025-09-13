@@ -182,5 +182,29 @@ If something goes wrong:
    tools/sanity-check.sh
    ```
 
-3. Read [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) for detailed fixes.  
-4. Read [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) for how to contribute.  
+3. Read [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) for detailed fixes. 
+
+
+
+## 📜 License & Maintenance
+
+Atlas Infra is licensed under the **MIT License** — you are free to use, copy, modify, and distribute it, as long as you credit the original author.  
+
+⚠️ **Disclaimer:** This project is provided *as-is*, without support or warranties.  
+I do not provide troubleshooting or ongoing maintenance.  
+Contributions, forks, and community-driven improvements are welcome.  
+
+---
+
+## 📚 Documentation
+
+Atlas Infra includes several docs to help you use and contribute:
+
+- [README.md](./README.md) → Main guide (you are here)  
+- [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) → How to contribute and dev workflow  
+- [LICENSE](./LICENSE) → Project license (MIT)  
+- [docs/SECURITY.md](./docs/SECURITY.md) → Security policy (no support, community fixes only)  
+- [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) → Common issues and how to fix them  
+
+👉 Start with **bash atlas.sh** to launch the menu and explore your options.
+
