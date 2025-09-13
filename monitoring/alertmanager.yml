@@ -1,0 +1,8 @@
+global: {}
+route:
+  receiver: ntfy
+receivers:
+  - name: ntfy
+    webhook_configs:
+      - url: http://ntfy:80/ # local service URL
+        send_resolved: true

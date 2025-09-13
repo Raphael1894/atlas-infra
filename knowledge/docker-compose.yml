@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  gitea:
+    image: gitea/gitea:1.22
+    container_name: gitea
+    environment:
+      - USER_UID=${PUID}
+      - USER_GID=${PGID}
+      - GITEA__server__ROOT_URL=http://git.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+      - GITEA__security__INSTALL_LOCK=true
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__database__PATH=/data/gitea/gitea.db
+      - GITEA__service__DISABLE_REGISTRATION=true
+      - GITEA__service__DEFAULT_ALLOW_CREATE_ORGANIZATION=false
+      - GITEA__mailer__ENABLED=false
+    volumes:
+      - ${DATA_ROOT}/gitea:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitea.rule=Host(`git.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.gitea.entrypoints=web"
+    restart: unless-stopped
+    networks:
+      - atlas
+
+
+networks:
+  atlas:
+    external: true
+    name: ${ATLAS_DOCKER_NETWORK}

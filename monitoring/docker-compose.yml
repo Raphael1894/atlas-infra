@@ -1,0 +1,110 @@
+version: "3.9"
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${DATA_ROOT}/prometheus:/prometheus
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prom.rule=Host(`prometheus.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.prom.entrypoints=web"
+    restart: unless-stopped
+    networks: [atlas]
+
+
+  vmagent:
+    image: victoriametrics/vmagent:v1.103.0
+    container_name: vmagent
+    command:
+      - "-promscrape.config=/etc/prometheus/prometheus.yml"
+      - "-remoteWrite.url=http://vminsert:8480/insert/0/prometheus"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on: [vminsert]
+    networks: [atlas]
+
+
+  vminsert:
+    image: victoriametrics/vminsert:v1.103.0
+    container_name: vminsert
+    networks: [atlas]
+
+
+  vmselect:
+    image: victoriametrics/vmselect:v1.103.0
+    container_name: vmselect
+    networks: [atlas]
+
+
+  vmstorage:
+    image: victoriametrics/vmstorage:v1.103.0
+    container_name: vmstorage
+    volumes:
+      - ${DATA_ROOT}/victoriametrics:/storage
+    networks: [atlas]
+
+
+  grafana:
+    image: grafana/grafana:10.4.5
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - ${DATA_ROOT}/grafana:/var/lib/grafana
+      - ./grafana-provisioning:/etc/grafana/provisioning
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+    depends_on: [prometheus]
+    restart: unless-stopped
+    networks: [atlas]
+
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ${DATA_ROOT}/alertmanager:/alertmanager
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.alerts.rule=Host(`alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.alerts.entrypoints=web"
+    restart: unless-stopped
+    networks: [atlas]
+
+
+  node_exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node_exporter
+    pid: host
+    network_mode: host
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro,rslave
+    restart: unless-stopped
+
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: cadvisor
+    ports: ["9323:8080"]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+    networks: [atlas]
+
+
+networks:
+  atlas:
+    external: true
+    name: ${ATLAS_DOCKER_NETWORK}

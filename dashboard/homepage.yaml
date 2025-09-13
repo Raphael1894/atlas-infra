@@ -1,0 +1,28 @@
+title: Atlas
+theme: dark
+sections:
+  - Core:
+    - Portainer:
+      icon: mdi:dock-left
+      href: http://portainer.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    - Gitea:
+      icon: mdi:git
+      href: http://git.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    - OCIS:
+      icon: mdi:cloud
+      href: http://cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    - Vaultwarden:
+      icon: mdi:key
+      href: http://vault.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    - Grafana:
+      icon: mdi:chart-line
+      href: http://grafana.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    - Prometheus:
+      icon: mdi:database
+      href: http://prometheus.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    - Alertmanager:
+      icon: mdi:alert
+      href: http://alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    - ntfy:
+      icon: mdi:bell
+      href: http://ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN}

@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  ocis:
+    image: owncloud/ocis:latest
+    container_name: ocis
+    environment:
+      - OCIS_INSECURE=true
+      - OCIS_URL=http://cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+    volumes:
+      - ${DATA_ROOT}/ocis:/var/lib/ocis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ocis.rule=Host(`cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.ocis.entrypoints=web"
+    restart: unless-stopped
+    networks:
+      - atlas
+
+
+networks:
+  atlas:
+    external: true
+    name: ${ATLAS_DOCKER_NETWORK}

@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATA_ROOT}/portainer:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.portainer.entrypoints=web"
+    restart: unless-stopped
+    networks:
+      - atlas
+
+
+networks:
+  atlas:
+    external: true
+    name: ${ATLAS_DOCKER_NETWORK}
