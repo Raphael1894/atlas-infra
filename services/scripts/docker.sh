@@ -1,67 +1,66 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install Docker Engine + Compose v2
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
+# ── Setup ────────────────────────────────────────────────
 
-. /etc/os-release
+# Resolve absolute path to this script
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-echo \
-"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-$VERSION_CODENAME stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Load shared colors
+source "$SCRIPT_DIR/colors.sh"
 
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
 
-# Enable Docker and start it
-systemctl enable --now docker
+# Always operate from repo root
+cd "$SCRIPT_DIR/.."
 
-# Add user to docker group (so you can run docker without sudo after re-login)
-usermod -aG docker ${SUDO_USER:-$USER} || true
 
-# Tune containerd for better defaults
-mkdir -p /etc/containerd
-containerd config default | tee /etc/containerd/config.toml >/dev/null
-systemctl restart containerd
+# ── Configs ──────────────────────────────────────────────
 
-# Wait for Docker to be ready before continuing
-echo "⏳ Waiting for Docker daemon..."
-timeout 30s bash -c 'until docker info >/dev/null 2>&1; do sleep 1; done' || true
-
-# --- Sanity check function ---
-check_docker() {
-  echo "🔍 Running Docker sanity checks..."
-  docker --version || return 1
-  docker compose version || return 1
-  docker ps >/dev/null 2>&1 || return 1
-
-  echo "🐳 Running hello-world container test..."
-  if docker run --rm hello-world >/dev/null 2>&1; then
-    echo "✅ hello-world ran successfully"
-  else
-    echo "❌ Failed to run hello-world"
-    return 1
-  fi
-
-  # Remove hello-world image so system stays clean
-  docker image rm -f hello-world >/dev/null 2>&1 || true
-  echo "🧹 hello-world image removed"
-
-  return 0
-}
-
-# First attempt
-if check_docker; then
-  echo "🎉 Docker & Compose are installed and working!"
-else
-  echo "⚠️  Docker not ready yet. Waiting 60s and retrying..."
-  sleep 60
-  if check_docker; then
-    echo "🎉 Docker & Compose are installed and working (after retry)!"
-  else
-    echo "❌ Docker failed to start after retry. Exiting."
-    exit 1
-  fi
+if [ ! -f config/server_config.env ]; then
+  echo -e "${ERROR}❌ Missing config/server_config.env. Copy template first.${RESET}"
+  exit 1
 fi
+
+# Load configs
+set -a
+source config/server_config.env
+[ -f config/.env ] && source config/.env
+set +a
+
+
+# ── Run setup scripts ────────────────────────────────────
+
+echo -e "${INFO}📦 Installing base system packages...${RESET}"
+sudo bash services/scripts/base.sh
+
+echo -e "${INFO}🐳 Installing Docker...${RESET}"
+sudo bash services/scripts/docker.sh
+
+echo -e "${INFO}🔒 Setting up Tailscale...${RESET}"
+sudo bash services/scripts/tailscale.sh
+
+echo -e "${INFO}🛡️  Configuring firewall...${RESET}"
+sudo bash services/scripts/firewall.sh
+
+
+# ── Docker network ───────────────────────────────────────
+
+echo -e "${INFO}🌐 Ensuring Docker network '$ATLAS_DOCKER_NETWORK' exists...${RESET}"
+if ! sudo docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
+  sudo docker network create "$ATLAS_DOCKER_NETWORK"
+  echo -e "${SUCCESS}✅ Created network '$ATLAS_DOCKER_NETWORK'${RESET}"
+else
+  echo -e "${SUCCESS}✅ Network '$ATLAS_DOCKER_NETWORK' already exists${RESET}"
+fi
+
+
+# ── Core services ────────────────────────────────────────
+
+echo -e "${INFO}🚀 Starting core services...${RESET}"
+sudo bash services/scripts/atlas.sh
+
+
+# ── Done ─────────────────────────────────────────────────
+
+echo -e "${SUCCESS}✅ Bootstrap complete!${RESET}"

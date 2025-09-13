@@ -6,7 +6,7 @@ include ../config/server_config.env
 -include ../config/.env
 export
 
-COMPOSE = docker compose
+COMPOSE = sudo docker compose
 SERVICES_DIR = ../services
 NET ?= $(ATLAS_DOCKER_NETWORK)
 
