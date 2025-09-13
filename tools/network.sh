@@ -37,16 +37,13 @@ while true; do
   unset IFS
   read -r NEW_IP || true
 
-  echo -e "${INFO}DEBUG: Captured IP = '$NEW_IP'${RESET}"
-
-  # Validate IP format (basic check)
+  # Validate IP format
   if [[ ! "$NEW_IP" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
     echo -e "${ERROR}❌ Invalid IP address format. Please enter like 192.168.1.59${RESET}"
     continue
   fi
 
   NEW_IP_CIDR="${NEW_IP}/24"
-  echo -e "${INFO}DEBUG: Built CIDR = '$NEW_IP_CIDR'${RESET}"
 
   if ping -c1 -W1 "$NEW_IP" &>/dev/null; then
     echo -e "${ERROR}❌ IP $NEW_IP is already in use.${RESET}"
@@ -71,11 +68,24 @@ NEW_GATEWAY=${NEW_GATEWAY:-192.168.1.254}
 # --- File paths ---
 NETPLAN_FILE="/etc/netplan/01-atlas-network.yaml"
 BACKUP_FILE="/etc/netplan/01-atlas-network.backup.yaml"
+ORIGINAL_FILE="/etc/netplan/01-atlas-network.original.yaml"
 
-# --- Backup current config BEFORE overwriting ---
-if [ -f "$NETPLAN_FILE" ]; then
-  sudo cp "$NETPLAN_FILE" "$BACKUP_FILE"
-  sudo chmod 600 "$BACKUP_FILE"
+# --- Save original config once (from cloud-init) ---
+if [ ! -f "$ORIGINAL_FILE" ] && [ -f "/etc/netplan/50-cloud-init.yaml" ]; then
+  echo -e "${INFO}📦 Saving original distro config as $ORIGINAL_FILE${RESET}"
+  sudo cp /etc/netplan/50-cloud-init.yaml "$ORIGINAL_FILE"
+  sudo chmod 600 "$ORIGINAL_FILE"
+fi
+
+# --- Validate current config before backing up ---
+if sudo netplan generate 2>/dev/null; then
+  if [ -f "$NETPLAN_FILE" ]; then
+    echo -e "${INFO}📦 Backing up last known good config to $BACKUP_FILE${RESET}"
+    sudo cp "$NETPLAN_FILE" "$BACKUP_FILE"
+    sudo chmod 600 "$BACKUP_FILE"
+  fi
+else
+  echo -e "${WARN}⚠️  Current netplan config is invalid, skipping backup.${RESET}"
 fi
 
 # --- Write new netplan config ---
@@ -103,11 +113,18 @@ echo -e "${INFO}⚙️  Applying new network configuration...${RESET}"
 if ! sudo netplan apply; then
   echo -e "${ERROR}❌ Failed to apply netplan config. Rolling back...${RESET}"
   if [ -f "$BACKUP_FILE" ]; then
+    echo -e "${WARN}⚠️  Restoring last known good config...${RESET}"
     sudo cp "$BACKUP_FILE" "$NETPLAN_FILE"
     sudo chmod 600 "$NETPLAN_FILE"
     sudo netplan apply || true
+  elif [ -f "$ORIGINAL_FILE" ]; then
+    echo -e "${WARN}⚠️  Restoring original distro config...${RESET}"
+    sudo cp "$ORIGINAL_FILE" "$NETPLAN_FILE"
+    sudo chmod 600 "$NETPLAN_FILE"
+    sudo netplan apply || true
+  else
+    echo -e "${ERROR}❌ No valid backup available. Please fix manually.${RESET}"
   fi
-  echo -e "${ERROR}⚠️  Please update your network configuration manually.${RESET}"
   sleep 3
   exit 1
 fi
@@ -123,6 +140,10 @@ else
   echo -e "${WARN}⚠️  Rolling back to previous configuration...${RESET}"
   if [ -f "$BACKUP_FILE" ]; then
     sudo cp "$BACKUP_FILE" "$NETPLAN_FILE"
+    sudo chmod 600 "$NETPLAN_FILE"
+    sudo netplan apply || true
+  elif [ -f "$ORIGINAL_FILE" ]; then
+    sudo cp "$ORIGINAL_FILE" "$NETPLAN_FILE"
     sudo chmod 600 "$NETPLAN_FILE"
     sudo netplan apply || true
   fi
