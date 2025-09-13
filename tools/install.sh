@@ -43,7 +43,7 @@ BASE_DOMAIN=${BASE_DOMAIN:-lan}
 
 # --- Confirm ---
 echo
-echo -e "${BLUE}⚙️  Installation configuration:${RESET}"
+echo -e "${INFO}⚙️  Installation configuration:${RESET}"
 echo "   Hostname:    $SERVER_NAME"
 echo "   Base domain: $BASE_DOMAIN"
 echo "   FQDN base:   $SERVER_NAME.$BASE_DOMAIN"
@@ -164,7 +164,7 @@ make -f "$TOOLS_DIR/Makefile" up-all
 echo
 echo -e "${SUCCESS}🎉 Installation complete!${RESET}"
 echo
-echo -e "${BLUE}You can now access your server '$SERVER_NAME' services via:${RESET}"
+echo -e "${INFO}You can now access your server '$SERVER_NAME' services via:${RESET}"
 echo "  Homepage:     http://$SERVER_NAME.$BASE_DOMAIN"
 echo "  Portainer:    http://portainer.$SERVER_NAME.$BASE_DOMAIN"
 echo "  Gitea:        http://git.$SERVER_NAME.$BASE_DOMAIN"
