@@ -18,14 +18,14 @@ SERVICES_SCRIPTS="services/scripts"
 # --- Ensure server_config.env exists ---
 if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
   echo -e "${WARN}⚠️  No server_config.env found. Creating one from template...${RESET}"
-  cp "$TEMPLATES_DIR/server_config.env.example" "$CONFIG_DIR/server_config.env"
+  cp "$TEMPLATES_DIR/server_config.env.template" "$CONFIG_DIR/server_config.env"
 fi
 
 # --- Ensure .env exists (fallback only) ---
 if [ ! -f "$CONFIG_DIR/.env" ]; then
   echo -e "${WARN}⚠️  No .env found. Creating one from template (will be overwritten by installer prompts)...${RESET}"
-  if [ -f "$TEMPLATES_DIR/.env.example" ]; then
-    cp "$TEMPLATES_DIR/.env.example" "$CONFIG_DIR/.env"
+  if [ -f "$TEMPLATES_DIR/.env.template" ]; then
+    cp "$TEMPLATES_DIR/.env.template" "$CONFIG_DIR/.env"
   else
     touch "$CONFIG_DIR/.env"
   fi
@@ -56,17 +56,19 @@ if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
   exit 1
 fi
 
-# --- Update server_config.env ---
-if [ -f "$CONFIG_DIR/server_config.env" ]; then
-  sed -i "s/^ATLAS_HOSTNAME=.*/ATLAS_HOSTNAME=$SERVER_NAME/" "$CONFIG_DIR/server_config.env"
-  sed -i "s/^BASE_DOMAIN=.*/BASE_DOMAIN=$BASE_DOMAIN/" "$CONFIG_DIR/server_config.env"
-  sed -i "s/^FQDN_BASE=.*/FQDN_BASE=${SERVER_NAME}.${BASE_DOMAIN}/" "$CONFIG_DIR/server_config.env"
-else
-  echo -e "${ERROR}❌ Missing $CONFIG_DIR/server_config.env. Copy template first.${RESET}"
-  exit 1
+# --- Ensure server_config.env exists ---
+if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
+  echo -e "${WARN}⚠️  No server_config.env found. Creating one from template...${RESET}"
+  cp "$TEMPLATES_DIR/server_config.env.template" "$CONFIG_DIR/server_config.env"
 fi
 
+# --- Update server_config.env with chosen values ---
+sed -i "s/^ATLAS_HOSTNAME=.*/ATLAS_HOSTNAME=$SERVER_NAME/" "$CONFIG_DIR/server_config.env" || echo "ATLAS_HOSTNAME=$SERVER_NAME" >> "$CONFIG_DIR/server_config.env"
+sed -i "s/^BASE_DOMAIN=.*/BASE_DOMAIN=$BASE_DOMAIN/" "$CONFIG_DIR/server_config.env" || echo "BASE_DOMAIN=$BASE_DOMAIN" >> "$CONFIG_DIR/server_config.env"
+sed -i "s/^FQDN_BASE=.*/FQDN_BASE=${SERVER_NAME}.${BASE_DOMAIN}/" "$CONFIG_DIR/server_config.env" || echo "FQDN_BASE=${SERVER_NAME}.${BASE_DOMAIN}" >> "$CONFIG_DIR/server_config.env"
+
 echo -e "${SUCCESS}✅ Server identity configured${RESET}"
+
 
 # --- Run network configuration ---
 bash "$TOOLS_DIR/network.sh"

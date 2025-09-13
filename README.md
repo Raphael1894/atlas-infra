@@ -61,8 +61,8 @@ With hostname = `atlas`, you’d get e.g. `http://atlas.lan`.
 ## ⚙️ Configuration
 
 - **Config templates** → `config/config-templates/`
-  - `server_config.env.example` → blueprint for server identity & system paths.  
-  - `.env.example` → blueprint for secrets (admin users, tokens, passwords).  
+  - `server_config.env.template` → blueprint for server identity & system paths.  
+  - `.env.template` → blueprint for secrets (admin users, tokens, passwords).  
 
 - **Server settings** → `config/server_config.env`  
   - Hostname, domain, data paths, timezone, Docker network  
@@ -106,7 +106,7 @@ atlas-infra/
 ├── atlas.sh # Root wrapper → launches tools/run.sh
 ├── config/ # Configs and secrets
 │ ├── config-templates/ # Example blueprints for configs & secrets
-│ │ └── server_config.env.example
+│ │ └── server_config.env.template
 │ ├── server_config.env # Active server config (safe to commit)
 │ └── .env # Secrets (never commit, auto-generated)
 ├── docs/ # User documentation
