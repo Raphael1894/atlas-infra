@@ -16,22 +16,10 @@ fi
 CURRENT_IP=$(ip -4 addr show dev "$DEFAULT_IFACE" | awk '/inet / {print $2}' | cut -d/ -f1)
 GATEWAY=$(ip route | awk '/default/ {print $3; exit}')
 
-# --- Check if using DHCP (basic check) ---
-DHCP_MODE="unknown"
-if grep -qi 'dhcp4: true' /etc/netplan/*.yaml 2>/dev/null; then
-  DHCP_MODE="dhcp"
-elif grep -qi 'dhcp4: no' /etc/netplan/*.yaml 2>/dev/null; then
-  DHCP_MODE="static"
-fi
-
 # --- Show current status ---
 echo "   Interface:  $DEFAULT_IFACE"
 echo "   IP Address: $CURRENT_IP"
 echo "   Gateway:    $GATEWAY"
-echo "   Mode:       $DHCP_MODE"
-if [[ "$DHCP_MODE" == "dhcp" ]]; then
-  echo -e "${WARN}⚠️  DHCP detected. A static IP is strongly recommended for servers.${RESET}"
-fi
 
 # --- Ask user if they want to change ---
 echo -ne "${PROMPT}👉 Do you want to change the IP address? [y/N]: ${RESET}"
@@ -69,11 +57,14 @@ echo -ne "${PROMPT}👉 Enter gateway IP (default: 192.168.1.254): ${RESET}"
 read -r NEW_GATEWAY
 NEW_GATEWAY=${NEW_GATEWAY:-192.168.1.254}
 
-# --- Backup netplan config ---
+# --- File paths ---
 NETPLAN_FILE="/etc/netplan/01-atlas-network.yaml"
-BACKUP_FILE="/etc/netplan/01-atlas-network.backup.$(date +%s).yaml"
+BACKUP_FILE="/etc/netplan/01-atlas-network.backup.yaml"
+
+# --- Backup current config BEFORE overwriting ---
 if [ -f "$NETPLAN_FILE" ]; then
   sudo cp "$NETPLAN_FILE" "$BACKUP_FILE"
+  sudo chmod 600 "$BACKUP_FILE"
 fi
 
 # --- Write new netplan config ---
