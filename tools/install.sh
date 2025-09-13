@@ -266,3 +266,14 @@ echo
 
 echo -e "${SUCCESS}✅ Setup finished. Your homelab is ready!${RESET}"
 echo
+
+# --- Post-install reminder ---
+echo -e "${INFO}👉 Reminder:${RESET}"
+echo -e "   If you haven’t authenticated Tailscale yet, run:"
+echo -e "   ${HIGHLIGHT}sudo tailscale up --ssh --hostname ${SERVER_NAME}${RESET}"
+echo
+echo -e "   This step is required to enable secure remote access over Tailscale."
+echo
+
+exit 0
+

@@ -36,8 +36,8 @@ check_step () {
     echo -e "${ERROR}❌ FAILED${RESET}"
     echo -e "   ${WARN}Hint:${RESET} $hint"
 
-    if docker ps -a --format '{{.Names}}' | grep -q "$service_name"; then
-      docker logs --tail=200 "$service_name" &> "logs/${service_name}.log" || true
+    if sudo docker ps -a --format '{{.Names}}' | grep -q "$service_name"; then
+      sudo docker logs --tail=200 "$service_name" &> "logs/${service_name}.log" || true
       echo -e "   ${INFO}Logs saved to:${RESET} logs/${service_name}.log"
     else
       echo "No container found for $service_name" > "logs/${service_name}.log"
@@ -52,37 +52,37 @@ check_step () {
 echo -e "\n${HIGHLIGHT}🔧 System Checks${RESET}"
 check_step "System package 'curl'" "dpkg -l | grep -q curl" "Run: sudo apt install -y curl" "system"
 check_step "System package 'git'" "dpkg -l | grep -q git" "Run: sudo apt install -y git" "system"
-check_step "Docker installed" "docker --version" "Re-run tools/bootstrap.sh" "docker"
+check_step "Docker installed" "sudo docker --version" "Re-run tools/bootstrap.sh" "docker"
 check_step "Docker daemon running" "systemctl is-active --quiet docker" "Run: sudo systemctl restart docker && sudo systemctl enable docker" "docker"
-check_step "Docker network '$ATLAS_DOCKER_NETWORK'" "docker network inspect $ATLAS_DOCKER_NETWORK" "Run: docker network create $ATLAS_DOCKER_NETWORK" "docker"
+check_step "Docker network '$ATLAS_DOCKER_NETWORK'" "sudo docker network inspect $ATLAS_DOCKER_NETWORK" "Run: sudo docker network create $ATLAS_DOCKER_NETWORK" "docker"
 check_step "Tailscale installed" "tailscale --version" "Re-run services/scripts/tailscale.sh" "tailscale"
 check_step "Tailscale running" "systemctl is-active --quiet tailscaled" "Run: sudo systemctl restart tailscaled" "tailscale"
 check_step "Firewall active" "sudo ufw status | grep -q 'Status: active'" "Run: sudo ufw enable" "ufw"
 
 # --- Core services ---
 echo -e "\n${HIGHLIGHT}🖥️  Core Services${RESET}"
-check_step "Proxy (Traefik)" "docker ps --format '{{.Names}}' | grep -q proxy" "Run: make -f tools/Makefile restart NAME=proxy && check logs" "proxy"
-check_step "Dashboard (Homepage)" "docker ps --format '{{.Names}}' | grep -q dashboard" "Run: make -f tools/Makefile restart NAME=dashboard" "dashboard"
-check_step "Portainer" "docker ps --format '{{.Names}}' | grep -q portainer" "Run: make -f tools/Makefile restart NAME=portainer" "portainer"
+check_step "Proxy (Traefik)" "sudo docker ps --format '{{.Names}}' | grep -q proxy" "Run: make -f tools/Makefile restart NAME=proxy && check logs" "proxy"
+check_step "Dashboard (Homepage)" "sudo docker ps --format '{{.Names}}' | grep -q dashboard" "Run: make -f tools/Makefile restart NAME=dashboard" "dashboard"
+check_step "Portainer" "sudo docker ps --format '{{.Names}}' | grep -q portainer" "Run: make -f tools/Makefile restart NAME=portainer" "portainer"
 
 # --- Data & collaboration ---
 echo -e "\n${HIGHLIGHT}📦 Storage & Collaboration${RESET}"
-check_step "OCIS (cloud)" "docker ps --format '{{.Names}}' | grep -q cloud" "Run: make -f tools/Makefile restart NAME=cloud" "cloud"
-check_step "Gitea" "docker ps --format '{{.Names}}' | grep -q knowledge" "Run: make -f tools/Makefile restart NAME=knowledge" "knowledge"
+check_step "OCIS (cloud)" "sudo docker ps --format '{{.Names}}' | grep -q cloud" "Run: make -f tools/Makefile restart NAME=cloud" "cloud"
+check_step "Gitea" "sudo docker ps --format '{{.Names}}' | grep -q knowledge" "Run: make -f tools/Makefile restart NAME=knowledge" "knowledge"
 
 # --- Security ---
 echo -e "\n${HIGHLIGHT}🔒 Security${RESET}"
-check_step "Vaultwarden" "docker ps --format '{{.Names}}' | grep -q security" "Check config/.env for VW_ADMIN_TOKEN and restart" "security"
+check_step "Vaultwarden" "sudo docker ps --format '{{.Names}}' | grep -q security" "Check config/.env for VW_ADMIN_TOKEN and restart" "security"
 
 # --- Monitoring ---
 echo -e "\n${HIGHLIGHT}📊 Monitoring${RESET}"
 for svc in prometheus grafana alertmanager victoriametrics node_exporter cadvisor; do
-  check_step "$svc" "docker ps --format '{{.Names}}' | grep -q monitoring" "Run: make -f tools/Makefile restart NAME=monitoring" "monitoring"
+  check_step "$svc" "sudo docker ps --format '{{.Names}}' | grep -q monitoring" "Run: make -f tools/Makefile restart NAME=monitoring" "monitoring"
 done
 
 # --- Notifications ---
 echo -e "\n${HIGHLIGHT}📣 Notifications${RESET}"
-check_step "ntfy" "docker ps --format '{{.Names}}' | grep -q notifications" "Run: make -f tools/Makefile restart NAME=notifications" "notifications"
+check_step "ntfy" "sudo docker ps --format '{{.Names}}' | grep -q notifications" "Run: make -f tools/Makefile restart NAME=notifications" "notifications"
 
 # --- Final report ---
 echo
@@ -93,7 +93,7 @@ else
   echo
   echo "👉 Next steps:"
   echo "  - Review logs in the 'logs/' folder"
-  echo "  - Check container logs manually: docker logs <container_name> --tail=100 -f"
+  echo "  - Check container logs manually: sudo docker logs <container_name> --tail=100 -f"
   echo "  - Check system logs: journalctl -xe"
   echo "  - Consult docs/TROUBLESHOOTING.md for detailed fixes"
   echo
