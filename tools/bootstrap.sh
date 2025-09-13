@@ -2,22 +2,17 @@
 set -euo pipefail
 
 # ── Setup ────────────────────────────────────────────────
-
-# Resolve absolute path to this script (tools/)
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 REPO_ROOT="$SCRIPT_DIR/.."
 
-# Load shared colors (tools/colors.sh)
+# Load shared colors
 source "$SCRIPT_DIR/colors.sh"
 
 echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
 
-# Always operate from repo root
 cd "$REPO_ROOT"
 
-
 # ── Configs ──────────────────────────────────────────────
-
 CONFIG_FILE="$REPO_ROOT/config/server_config.env"
 SECRETS_FILE="$REPO_ROOT/config/.env"
 
@@ -26,15 +21,12 @@ if [ ! -f "$CONFIG_FILE" ]; then
   exit 1
 fi
 
-# Load configs
 set -a
 source "$CONFIG_FILE"
 [ -f "$SECRETS_FILE" ] && source "$SECRETS_FILE"
 set +a
 
-
 # ── Run setup scripts ────────────────────────────────────
-
 echo -e "${INFO}📦 Installing base system packages...${RESET}"
 sudo bash "$REPO_ROOT/services/scripts/base.sh"
 
@@ -47,9 +39,7 @@ sudo bash "$REPO_ROOT/services/scripts/tailscale.sh"
 echo -e "${INFO}🛡️  Configuring firewall...${RESET}"
 sudo bash "$REPO_ROOT/services/scripts/firewall.sh"
 
-
 # ── Docker network ───────────────────────────────────────
-
 echo -e "${INFO}🌐 Ensuring Docker network '$ATLAS_DOCKER_NETWORK' exists...${RESET}"
 if ! sudo docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
   sudo docker network create "$ATLAS_DOCKER_NETWORK"
@@ -58,13 +48,9 @@ else
   echo -e "${SUCCESS}✅ Network '$ATLAS_DOCKER_NETWORK' already exists${RESET}"
 fi
 
-
 # ── Core services ────────────────────────────────────────
-
 echo -e "${INFO}🚀 Starting core services...${RESET}"
 sudo bash "$REPO_ROOT/services/scripts/atlas.sh"
 
-
 # ── Done ─────────────────────────────────────────────────
-
 echo -e "${SUCCESS}✅ Bootstrap complete!${RESET}"
