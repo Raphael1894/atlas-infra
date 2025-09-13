@@ -4,10 +4,8 @@
 # Makefile directory (absolute)
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-# Load configs
-include $(MAKEFILE_DIR)/../config/server_config.env
--include $(MAKEFILE_DIR)/../config/.env
-export
+# Env files for Compose
+ENV_FILES = --env-file $(MAKEFILE_DIR)/../config/server_config.env --env-file $(MAKEFILE_DIR)/../config/.env
 
 COMPOSE = sudo docker compose
 SERVICES_DIR = $(MAKEFILE_DIR)/../services
@@ -31,28 +29,28 @@ up: up-all
 
 # --- Core layer ---
 up-core:
-	$(COMPOSE) -f $(SERVICES_DIR)/proxy/docker-compose.yml up -d
-	$(COMPOSE) -f $(SERVICES_DIR)/dashboard/docker-compose.yml up -d
-	$(COMPOSE) -f $(SERVICES_DIR)/portainer/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/dashboard/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/portainer/docker-compose.yml up -d
 
 # --- Full stack ---
 up-all: up-core
-	$(COMPOSE) -f $(SERVICES_DIR)/cloud/docker-compose.yml up -d
-	$(COMPOSE) -f $(SERVICES_DIR)/knowledge/docker-compose.yml up -d
-	$(COMPOSE) -f $(SERVICES_DIR)/security/docker-compose.yml up -d
-	$(COMPOSE) -f $(SERVICES_DIR)/monitoring/docker-compose.yml up -d
-	$(COMPOSE) -f $(SERVICES_DIR)/notifications/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/cloud/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/knowledge/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/security/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/monitoring/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/notifications/docker-compose.yml up -d
 
 # --- Tear down ---
 down-all:
-	$(COMPOSE) -f $(SERVICES_DIR)/notifications/docker-compose.yml down
-	$(COMPOSE) -f $(SERVICES_DIR)/monitoring/docker-compose.yml down
-	$(COMPOSE) -f $(SERVICES_DIR)/security/docker-compose.yml down
-	$(COMPOSE) -f $(SERVICES_DIR)/knowledge/docker-compose.yml down
-	$(COMPOSE) -f $(SERVICES_DIR)/cloud/docker-compose.yml down
-	$(COMPOSE) -f $(SERVICES_DIR)/portainer/docker-compose.yml down
-	$(COMPOSE) -f $(SERVICES_DIR)/dashboard/docker-compose.yml down
-	$(COMPOSE) -f $(SERVICES_DIR)/proxy/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/notifications/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/monitoring/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/security/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/knowledge/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/cloud/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/portainer/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/dashboard/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml down
 
 # --- Utilities ---
 ps:
@@ -63,7 +61,7 @@ logs:
 
 restart:
 	@[ -n "$(NAME)" ] || (echo "Usage: make restart NAME=stack" && exit 1)
-	$(COMPOSE) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml down && $(COMPOSE) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml down && $(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml up -d
 
 clean:
 	docker system prune -af --volumes
