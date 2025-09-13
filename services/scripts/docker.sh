@@ -3,64 +3,58 @@ set -euo pipefail
 
 # ── Setup ────────────────────────────────────────────────
 
-# Resolve absolute path to this script
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 # Load shared colors
 source "$SCRIPT_DIR/../../tools/colors.sh"
 
-echo -e "${INFO}⚙️  Running Atlas bootstrap...${RESET}"
-
-# Always operate from repo root
-cd "$SCRIPT_DIR/.."
-
-
-# ── Configs ──────────────────────────────────────────────
-
-if [ ! -f config/server_config.env ]; then
-  echo -e "${ERROR}❌ Missing config/server_config.env. Copy template first.${RESET}"
-  exit 1
-fi
-
-# Load configs
-set -a
-source config/server_config.env
-[ -f config/.env ] && source config/.env
-set +a
-
-
-# ── Run setup scripts ────────────────────────────────────
-
-echo -e "${INFO}📦 Installing base system packages...${RESET}"
-sudo bash services/scripts/base.sh
-
 echo -e "${INFO}🐳 Installing Docker...${RESET}"
-sudo bash services/scripts/docker.sh
 
-echo -e "${INFO}🔒 Setting up Tailscale...${RESET}"
-sudo bash services/scripts/tailscale.sh
+# ── Install Docker Engine + Compose v2 ───────────────────
 
-echo -e "${INFO}🛡️  Configuring firewall...${RESET}"
-sudo bash services/scripts/firewall.sh
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
+. /etc/os-release
 
-# ── Docker network ───────────────────────────────────────
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$VERSION_CODENAME stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-echo -e "${INFO}🌐 Ensuring Docker network '$ATLAS_DOCKER_NETWORK' exists...${RESET}"
-if ! sudo docker network inspect "$ATLAS_DOCKER_NETWORK" >/dev/null 2>&1; then
-  sudo docker network create "$ATLAS_DOCKER_NETWORK"
-  echo -e "${SUCCESS}✅ Created network '$ATLAS_DOCKER_NETWORK'${RESET}"
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Enable Docker and start it
+sudo systemctl enable --now docker
+
+# Add current user to docker group (so future logins don’t need sudo)
+sudo usermod -aG docker "${SUDO_USER:-$USER}" || true
+
+# Tune containerd for better defaults
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
+sudo systemctl restart containerd
+
+# Wait for Docker to be ready before continuing
+echo -e "${INFO}⏳ Waiting for Docker daemon...${RESET}"
+timeout 30s bash -c 'until sudo docker info >/dev/null 2>&1; do sleep 1; done' || true
+
+# ── Sanity check ─────────────────────────────────────────
+
+echo -e "${INFO}🔍 Running Docker sanity checks...${RESET}"
+sudo docker --version
+sudo docker compose version
+sudo docker ps >/dev/null 2>&1 || true
+
+echo -e "${INFO}🐳 Running hello-world test...${RESET}"
+if sudo docker run --rm hello-world >/dev/null 2>&1; then
+  echo -e "${SUCCESS}✅ hello-world ran successfully${RESET}"
 else
-  echo -e "${SUCCESS}✅ Network '$ATLAS_DOCKER_NETWORK' already exists${RESET}"
+  echo -e "${ERROR}❌ Failed to run hello-world${RESET}"
 fi
 
+# Clean up hello-world image so system stays clean
+sudo docker image rm -f hello-world >/dev/null 2>&1 || true
 
-# ── Core services ────────────────────────────────────────
-
-echo -e "${INFO}🚀 Starting core services...${RESET}"
-sudo bash services/scripts/atlas.sh
-
-
-# ── Done ─────────────────────────────────────────────────
-
-echo -e "${SUCCESS}✅ Bootstrap complete!${RESET}"
+echo -e "${SUCCESS}🎉 Docker & Compose are installed and working!${RESET}"
