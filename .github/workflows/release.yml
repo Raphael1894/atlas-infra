@@ -1,0 +1,57 @@
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0.0")
+          echo "latest=$latest" >> $GITHUB_OUTPUT
+
+      - name: Detect version bump
+        id: bump
+        run: |
+          # Extract version parts (MAJOR.MINOR.PATCH.BUILD)
+          IFS='.' read -r major minor patch build <<< "${{ steps.get_tag.outputs.latest }}"
+
+          # Count total commits
+          commit_count=$(git rev-list --count HEAD)
+
+          # Get commit messages since last tag
+          commits=$(git log ${{ steps.get_tag.outputs.latest }}..HEAD --pretty=format:"%s")
+
+          bump="none"
+          if echo "$commits" | grep -qiE '^fix'; then bump="patch"; fi
+          if echo "$commits" | grep -qiE '^feat'; then bump="minor"; fi
+          if echo "$commits" | grep -qiE '^MAJOR'; then bump="major"; fi
+
+          case $bump in
+            major) major=$((major+1)); minor=0; patch=0 ;;
+            minor) minor=$((minor+1)); patch=0 ;;
+            patch) patch=$((patch+1)) ;;
+            none)  ;; # no semantic bump, only commit count moves
+          esac
+
+          new="$major.$minor.$patch.$commit_count"
+          echo "new=$new" >> $GITHUB_OUTPUT
+
+      - name: Create and push new tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ steps.bump.outputs.new }}
+          git push origin ${{ steps.bump.outputs.new }}
+
+      - name: Show new version
+        run: echo "🚀 Released version ${{ steps.bump.outputs.new }}"
