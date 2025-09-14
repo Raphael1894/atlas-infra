@@ -19,6 +19,24 @@ REQUIRED_FILES=(
   "Makefile"
 )
 
+CONFIG_DIR="$SCRIPT_DIR/../config"
+INSTALLED_FLAG="$CONFIG_DIR/installed.flag"
+ATLAS_INSTALLED=false
+declare -A INSTALL_META
+
+if [ -f "$INSTALLED_FLAG" ]; then
+  ATLAS_INSTALLED=true
+  while IFS='=' read -r key value; do
+    case "$key" in
+      installed_at) INSTALL_META["installed_at"]=$value ;;
+      atlas_version) INSTALL_META["atlas_version"]=$value ;;
+      hostname) INSTALL_META["hostname"]=$value ;;
+      base_domain) INSTALL_META["base_domain"]=$value ;;
+    esac
+  done < "$INSTALLED_FLAG"
+fi
+
+
 MISSING=0
 for file in "${REQUIRED_FILES[@]}"; do
   TARGET="$TOOLS_DIR/$file"
@@ -158,44 +176,83 @@ export_doc() {
 }
 
 # --- Banner ---
-echo -e "${INFO}🌌 Atlas Launcher${RESET}"
+clear || tput clear || true
+echo -e "${HIGHLIGHT}${INFO}=========================================${RESET}"
+echo -e "${HIGHLIGHT}${INFO}🌌           Atlas Launcher              ${RESET}"
+echo -e "${HIGHLIGHT}${INFO}=========================================${RESET}"
+
+if [ "$ATLAS_INSTALLED" = true ]; then
+  echo -e "${SUCCESS}✅ Installed on:${RESET} ${INSTALL_META[installed_at]}"
+  echo -e "${PROMPT}💻 Host:${RESET} ${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}"
+  echo -e "${WARN}📦 Version:${RESET} ${INSTALL_META[atlas_version]}"
+fi
 echo
+
+
+
+show_services() {
+  if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
+    echo -e "${ERROR}❌ Missing $CONFIG_DIR/server_config.env. Cannot display service URLs.${RESET}"
+    return
+  fi
+
+  set -a
+  source "$CONFIG_DIR/server_config.env"
+  set +a
+
+  echo -e "${INFO}You can now access your server '$SERVER_NAME' services via:${RESET}"
+  echo "  Homepage:     http://$SERVER_NAME.$BASE_DOMAIN"
+  echo "  Portainer:    http://portainer.$SERVER_NAME.$BASE_DOMAIN"
+  echo "  Gitea:        http://git.$SERVER_NAME.$BASE_DOMAIN"
+  echo "  OCIS:         http://cloud.$SERVER_NAME.$BASE_DOMAIN"
+  echo "  Vaultwarden:  http://vault.$SERVER_NAME.$BASE_DOMAIN"
+  echo "  Grafana:      http://grafana.$SERVER_NAME.$BASE_DOMAIN"
+  echo "  Prometheus:   http://prometheus.$SERVER_NAME.$BASE_DOMAIN"
+  echo "  Alertmanager: http://alerts.$SERVER_NAME.$BASE_DOMAIN"
+  echo "  ntfy:         http://ntfy.$SERVER_NAME.$BASE_DOMAIN"
+}
 
 # --- Menu loop ---
 while true; do
   echo -e "${PROMPT}${HIGHLIGHT}What would you like to do?${RESET}"
-  echo "  1) Install Atlas (setup configs, secrets, services)"
-  echo "  2) Network configuration"
-  echo "  3) Prepare runtime (keeps only files needed to run the server)"
-  echo "  4) Run sanity check"
-  echo "  5) Start services (make up-all)"
-  echo "  6) Stop services (make down-all)"
-  echo "  7) Troubleshoot Atlas"
-  echo "  8) Documentation"
-  echo "  9) Exit"
+
+  MENU_ITEMS=(
+    "Install Atlas (setup configs, secrets, services)|bash \"$TOOLS_DIR/install.sh\"; exit 0"
+    "Network configuration|bash \"$TOOLS_DIR/network.sh\""
+    "Run sanity check|bash \"$TOOLS_DIR/sanity-check.sh\""
+    "Troubleshoot Atlas|bash \"$TOOLS_DIR/troubleshoot.sh\""
+    "Documentation|show_docs_menu"
+  )
+
+  if [ "$ATLAS_INSTALLED" = true ]; then
+    MENU_ITEMS+=(
+      "Prepare runtime (keeps only files needed to run the server)|bash \"$TOOLS_DIR/prepare-runtime.sh\""
+      "Start services (make up-all)|make -f \"$TOOLS_DIR/Makefile\" up-all"
+      "Stop services (make down-all)|make -f \"$TOOLS_DIR/Makefile\" down-all"
+      "Show service URLs|show_services"
+    )
+  fi
+
+  # Show numbered menu
+  for i in "${!MENU_ITEMS[@]}"; do
+    label="${MENU_ITEMS[$i]%%|*}"
+    echo "  $((i+1))) $label"
+  done
+  echo "  0) Exit"
+
   echo
-  read -rp "👉 Choose an option [1-9]: " choice
+  read -rp "👉 Choose an option [0-${#MENU_ITEMS[@]}]: " choice
   echo
 
-  case "$choice" in
-    1) 
-      bash "$TOOLS_DIR/install.sh"
-      exit 0   # <── stop menu after installation
-      ;;
-    2) bash "$TOOLS_DIR/network.sh" ;;
-    3) bash "$TOOLS_DIR/prepare-runtime.sh" ;;
-    4) bash "$TOOLS_DIR/sanity-check.sh" ;;
-    5) make -f "$TOOLS_DIR/Makefile" up-all ;;
-    6) make -f "$TOOLS_DIR/Makefile" down-all ;;
-    7) bash "$TOOLS_DIR/troubleshoot.sh" ;;
-    8) show_docs_menu ;;
-    9)
-      echo -e "${SUCCESS}👋 Goodbye!${RESET}"
-      exit 0
-      ;;
-    *) echo -e "${ERROR}❌ Invalid option. Try again.${RESET}" ;;
-  esac
-
+  if [[ "$choice" == "0" ]]; then
+    echo -e "${SUCCESS}👋 Goodbye!${RESET}"
+    exit 0
+  elif [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#MENU_ITEMS[@]}" ]; then
+    cmd="${MENU_ITEMS[$((choice-1))]#*|}"
+    eval "$cmd"
+  else
+    echo -e "${ERROR}❌ Invalid option. Try again.${RESET}"
+  fi
 
   echo
 done

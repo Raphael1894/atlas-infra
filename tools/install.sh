@@ -380,3 +380,11 @@ echo
 echo -e "   This step is required to enable secure remote access over Tailscale."
 echo
 
+# --- Mark installation complete (with metadata) ---
+{
+  echo "true"
+  echo "installed_at=$(date '+%Y-%m-%d %H:%M:%S')"
+  echo "atlas_version=1.0.0"
+  echo "hostname=$SERVER_NAME"
+  echo "base_domain=$BASE_DOMAIN"
+} > "$CONFIG_DIR/installed.flag"
