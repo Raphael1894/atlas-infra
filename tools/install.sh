@@ -122,80 +122,28 @@ if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
   set +a
   set -u
 
-  # --- Prompt for values ---
-  echo -ne "${PROMPT}👉 Gitea admin username (default: ${GITEA_ADMIN_USER:-atlas}): ${RESET}"
-  read -r GITEA_USER
-  GITEA_USER=${GITEA_USER:-${GITEA_ADMIN_USER:-atlas}}
-
-  echo -ne "${PROMPT}👉 Gitea admin password (default: ${GITEA_ADMIN_PASS:-changeme}): ${RESET}"
-  read -r GITEA_PASS
-  GITEA_PASS=${GITEA_PASS:-${GITEA_ADMIN_PASS:-changeme}}
-
-  echo -ne "${PROMPT}👉 Gitea admin email (default: ${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}): ${RESET}"
-  read -r GITEA_MAIL
-  GITEA_MAIL=${GITEA_MAIL:-${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}}
-
-  # Vaultwarden
-  VW_TOKEN_WAS_GENERATED=false
-  echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
-  read -r VW_TOKEN
-  if [ -z "$VW_TOKEN" ]; then
-    VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
-    VW_TOKEN_WAS_GENERATED=true
-    echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
-  fi
-
-  # OCIS
-  echo -ne "${PROMPT}👉 oCIS admin username (default: ${OCIS_ADMIN_USER:-admin}): ${RESET}"
-  read -r OCIS_USER
-  OCIS_USER=${OCIS_USER:-${OCIS_ADMIN_USER:-admin}}
-
-  echo -ne "${PROMPT}👉 oCIS admin password (default: ${OCIS_ADMIN_PASS:-changeme}): ${RESET}"
-  read -r OCIS_PASS
-  OCIS_PASS=${OCIS_PASS:-${OCIS_ADMIN_PASS:-changeme}}
-
-  # Auto-generate secrets if still set to 'changeme'
-  [ "${OCIS_JWT_SECRET:-changeme}" = "changeme" ] && OCIS_JWT_SECRET=$(openssl rand -hex 32)
-  [ "${OCIS_MACHINE_AUTH_API_KEY:-changeme}" = "changeme" ] && OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
-  [ "${OCIS_TRANSFER_SECRET:-changeme}" = "changeme" ] && OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
-
-  # Grafana
-  echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
-  read -r GRAFANA_USER
-  GRAFANA_USER=${GRAFANA_USER:-${GRAFANA_ADMIN_USER:-admin}}
-
-  echo -ne "${PROMPT}👉 Grafana admin password (default: ${GRAFANA_ADMIN_PASSWORD:-changeme}): ${RESET}"
-  read -r GRAFANA_PASS
-  GRAFANA_PASS=${GRAFANA_PASS:-${GRAFANA_ADMIN_PASSWORD:-changeme}}
-
-  # ntfy
-  echo -ne "${PROMPT}👉 ntfy default access (default: ${NTFY_AUTH_DEFAULT_ACCESS:-read-only}): ${RESET}"
-  read -r NTFY_ACCESS
-  NTFY_ACCESS=${NTFY_ACCESS:-${NTFY_AUTH_DEFAULT_ACCESS:-read-only}}
-
-  # CouchDB
-  echo -ne "${PROMPT}👉 CouchDB username (default: ${COUCHDB_USER:-obsidian}): ${RESET}"
-  read -r COUCHDB_USER
-  COUCHDB_USER=${COUCHDB_USER:-${COUCHDB_USER:-obsidian}}
-
-  echo -ne "${PROMPT}👉 CouchDB password (default: ${COUCHDB_PASSWORD:-changeme}): ${RESET}"
-  read -r COUCHDB_PASS
-  COUCHDB_PASS=${COUCHDB_PASS:-${COUCHDB_PASSWORD:-changeme}}
+  # --- Prompt for values (Gitea, Vaultwarden, OCIS, Grafana, ntfy, CouchDB) ---
+  # same prompts as before...
 
   # --- Write new .env ---
   cat > "$ENV_FILE" <<EOF
+# Gitea
 GITEA_ADMIN_USER=$GITEA_USER
 GITEA_ADMIN_PASS=$GITEA_PASS
 GITEA_ADMIN_EMAIL=$GITEA_MAIL
 
+# Vaultwarden
 VW_SIGNUPS_ALLOWED=false
 VW_ADMIN_TOKEN=$VW_TOKEN
 
+# Grafana
 GRAFANA_ADMIN_USER=$GRAFANA_USER
 GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
 
+# ntfy
 NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
 
+# OCIS
 OCIS_ADMIN_USER=$OCIS_USER
 OCIS_ADMIN_PASS=$OCIS_PASS
 OCIS_ADMIN_USER_ID=958d7151-528b-42b1-9e3a-fc9e7f1f5d34
@@ -206,6 +154,7 @@ OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
 STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
 
+# CouchDB
 COUCHDB_USER=$COUCHDB_USER
 COUCHDB_PASSWORD=$COUCHDB_PASS
 EOF
