@@ -136,52 +136,39 @@ make -f tools/Makefile clean        # Remove all containers, networks, and volum
 
 ```
 atlas-infra/
-├── atlas.sh # Root wrapper → launches tools/run.sh
+├── atlas.sh # Root wrapper → launches Atlas Launcher
 ├── config/ # Configs and secrets
-│ ├── config-templates/ # Example blueprints for configs & secrets
-│ │ └── server_config.env.template
+│ ├── config-templates/ # Example blueprints (safe to copy)
 │ ├── server_config.env # Active server config (safe to commit)
 │ └── .env # Secrets (never commit, auto-generated)
-├── docs/ # User documentation
+├── docs/ # Documentation
 │ └── TROUBLESHOOTING.md
-├── .github/ # Community & meta files (picked up by GitHub)
-│ ├── CODE_OF_CONDUCT.md
+├── .github/ # Community & GitHub metadata
 │ ├── CONTRIBUTING.md
+│ ├── CODE_OF_CONDUCT.md
 │ ├── ISSUE_TEMPLATE.md
 │ ├── PULL_REQUEST_TEMPLATE.md
 │ └── SECURITY.md
-├── services/ # Modular service stacks
+├── services/ # Modular service stacks (Docker Compose)
 │ ├── proxy/ # Traefik reverse proxy
 │ ├── dashboard/ # Homepage dashboard
-│ │ ├── docker-compose.yml
-│ │ └── homepage.yaml
 │ ├── portainer/ # Portainer manager
-│ ├── cloud/ # OCIS (Nextcloud alt)
+│ ├── cloud/ # OCIS (storage & collaboration)
 │ ├── knowledge/ # Gitea + Obsidian sync
-│ ├── security/ # Vaultwarden
+│ ├── security/ # Vaultwarden password manager
 │ ├── monitoring/ # Prometheus, Grafana, Alertmanager
-│ │ ├── grafana-provisioning/
-│ │ │ └── datasources.yml
-│ │ ├── prometheus.yml
-│ │ ├── alertmanager.yml
-│ │ └── docker-compose.yml
 │ ├── notifications/ # ntfy push notifications
-│ └── scripts/ # System setup scripts
-│ ├── atlas.sh
-│ ├── base.sh
-│ ├── docker.sh
-│ ├── firewall.sh
-│ └── tailscale.sh
-├── tools/ # Dev & runtime utilities
-│ ├── run.sh # Atlas Launcher (menu)
-│ ├── install.sh # Interactive installer
-│ ├── bootstrap.sh # System prep & core services
-│ ├── prepare-runtime.sh # Export runtime-only folder
-│ ├── sanity-check.sh # Quick health check
-│ ├── troubleshoot.sh # Advanced troubleshooting
-│ ├── colors.sh # Shared color codes for scripts
-│ └── Makefile # Manage Docker stacks
-└── README.md # This file
+│ └── scripts/ # System setup scripts (firewall, tailscale, etc.)
+└── tools/ # Dev & runtime utilities
+├── run.sh # Atlas Launcher (menu)
+├── install.sh # Interactive installer
+├── bootstrap.sh # System prep & core services
+├── prepare-runtime.sh # Export runtime-only folder
+├── sanity-check.sh # Quick health check
+├── troubleshoot.sh # Advanced troubleshooting
+├── network.sh # Network setup helper
+├── colors.sh # Shared color codes for scripts
+└── Makefile # Manage Docker stacks
 ```
 
 ---
