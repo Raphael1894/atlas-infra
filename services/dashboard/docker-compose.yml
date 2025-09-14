@@ -15,9 +15,9 @@ services:
       - "traefik.http.routers.homepage.entrypoints=web"
     restart: unless-stopped
     networks:
-      - atlas_net
+      - atlas
 
 networks:
-  atlas_net:
+  atlas:
     external: true
     name: ${ATLAS_DOCKER_NETWORK}

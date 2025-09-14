@@ -156,6 +156,11 @@ if [ -f "$ENV_FILE" ]; then
       OCIS_MACHINE_KEY_WAS_GENERATED=true
     fi
 
+    if [ -z "${OCIS_TRANSFER_SECRET:-}" ]; then
+      OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
+      OCIS_TRANSFER_SECRET_WAS_GENERATED=true
+    fi
+
     # --- Prompt for Grafana ---
     echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
     read -r GRAFANA_USER
@@ -202,6 +207,7 @@ OCIS_SYSTEM_USER_ID=$OCIS_SYSTEM_USER_ID
 PROXY_USER_ID=$PROXY_USER_ID
 OCIS_JWT_SECRET=$OCIS_JWT_SECRET
 OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
+OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
 EOF
 
       echo -e "${SUCCESS}✅ Secrets updated in $ENV_FILE${RESET}"
@@ -251,6 +257,7 @@ else
   # Auto-generate secrets
   OCIS_JWT_SECRET=$(openssl rand -hex 32)
   OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
+  OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
 
   echo -ne "${PROMPT}👉 Grafana admin username (default: admin): ${RESET}"
   read -r GRAFANA_USER
@@ -290,6 +297,7 @@ OCIS_SYSTEM_USER_ID=$OCIS_SYSTEM_USER_ID
 PROXY_USER_ID=$PROXY_USER_ID
 OCIS_JWT_SECRET=$OCIS_JWT_SECRET
 OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
+OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
 EOF
   echo -e "${SUCCESS}✅ Secrets written to $ENV_FILE${RESET}"
 fi
