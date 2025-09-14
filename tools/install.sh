@@ -15,15 +15,39 @@ TEMPLATES_DIR="$CONFIG_DIR/config-templates"
 TOOLS_DIR="tools"
 SERVICES_SCRIPTS="services/scripts"
 
+# --- Prompt for base domain / tailnet domain ---
+echo
+echo -e "${INFO}🌐 Atlas requires a base domain for service URLs.${RESET}"
+echo -e "${INFO}👉 Typically, this will be your ${HIGHLIGHT}Tailscale tailnet domain${RESET},"
+echo -e "   which looks like: ${HIGHLIGHT}tailnet-1234.ts.net${RESET}"
+echo
+echo -e "${PROMPT}Please choose an option:${RESET}"
+echo "   1) I already know my tailnet domain (enter it now)"
+echo "   2) Show me how to find / set up my tailnet domain"
+echo
+read -rp "Enter choice [1/2]: " DOMAIN_CHOICE
+
+if [[ "$DOMAIN_CHOICE" == "2" ]]; then
+  echo
+  echo -e "${INFO}🛠 Tailscale Domain Setup Instructions:${RESET}"
+  echo "1. Go to https://login.tailscale.com and sign in (or create an account)."
+  echo "2. In the admin console, go to 'DNS' and enable MagicDNS."
+  echo "3. You will see your tailnet domain (like tailnet-1234.ts.net)."
+  echo "   If you have a custom domain, you can configure it there too."
+  echo
+  echo -e "${PROMPT}After completing these steps, re-run the installer.${RESET}"
+  exit 0
+fi
+
+echo
+echo -ne "${PROMPT}👉 Enter your tailnet domain (default: tailnet-1234.ts.net): ${RESET}"
+read -r BASE_DOMAIN
+BASE_DOMAIN=${BASE_DOMAIN:-tailnet-1234.ts.net}
+
 # --- Prompt for server hostname ---
 echo -ne "${PROMPT}👉 Enter the name of your server (default: atlas): ${RESET}"
 read -r SERVER_NAME
 SERVER_NAME=${SERVER_NAME:-atlas}
-
-# --- Prompt for base domain ---
-echo -ne "${PROMPT}👉 Enter your base domain (default: lan): ${RESET}"
-read -r BASE_DOMAIN
-BASE_DOMAIN=${BASE_DOMAIN:-lan}
 
 # --- Confirm ---
 echo
