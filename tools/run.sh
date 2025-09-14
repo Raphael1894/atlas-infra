@@ -32,6 +32,7 @@ if [ -f "$INSTALLED_FLAG" ]; then
       atlas_version) INSTALL_META["atlas_version"]=$value ;;
       hostname) INSTALL_META["hostname"]=$value ;;
       base_domain) INSTALL_META["base_domain"]=$value ;;
+      *_url) INSTALL_META["$key"]=$value ;;
     esac
   done < "$INSTALLED_FLAG"
 fi
@@ -182,34 +183,24 @@ echo -e "${HIGHLIGHT}${INFO}🌌           Atlas Launcher              ${RESET}"
 echo -e "${HIGHLIGHT}${INFO}=========================================${RESET}"
 
 if [ "$ATLAS_INSTALLED" = true ]; then
-  echo -e "${SUCCESS}✅ Installed on:${RESET} ${INSTALL_META[installed_at]}"
-  echo -e "${PROMPT}💻 Host:${RESET} ${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}"
-  echo -e "${WARN}📦 Version:${RESET} ${INSTALL_META[atlas_version]}"
+  echo -e "${SUCCESS}✅ Installed on:${RESET} ${INSTALL_META[installed_at]:-unknown}"
+  echo -e "${PROMPT}💻 Host:${RESET} ${INSTALL_META[hostname]:-unknown}.${INSTALL_META[base_domain]:-unknown}"
+  echo -e "${WARN}📦 Version:${RESET} ${INSTALL_META[atlas_version]:-dev}"
 fi
 echo
 
-
-
+# --- Show services function and URL ---
 show_services() {
-  if [ ! -f "$CONFIG_DIR/server_config.env" ]; then
-    echo -e "${ERROR}❌ Missing $CONFIG_DIR/server_config.env. Cannot display service URLs.${RESET}"
-    return
-  fi
-
-  set -a
-  source "$CONFIG_DIR/server_config.env"
-  set +a
-
-  echo -e "${INFO}You can now access your server '$SERVER_NAME' services via:${RESET}"
-  echo "  Homepage:     http://$SERVER_NAME.$BASE_DOMAIN"
-  echo "  Portainer:    http://portainer.$SERVER_NAME.$BASE_DOMAIN"
-  echo "  Gitea:        http://git.$SERVER_NAME.$BASE_DOMAIN"
-  echo "  OCIS:         http://cloud.$SERVER_NAME.$BASE_DOMAIN"
-  echo "  Vaultwarden:  http://vault.$SERVER_NAME.$BASE_DOMAIN"
-  echo "  Grafana:      http://grafana.$SERVER_NAME.$BASE_DOMAIN"
-  echo "  Prometheus:   http://prometheus.$SERVER_NAME.$BASE_DOMAIN"
-  echo "  Alertmanager: http://alerts.$SERVER_NAME.$BASE_DOMAIN"
-  echo "  ntfy:         http://ntfy.$SERVER_NAME.$BASE_DOMAIN"
+  echo -e "${INFO}You can now access your server '${INSTALL_META[hostname]}' services via:${RESET}"
+  echo "  Homepage:     ${INSTALL_META[homepage_url]}"
+  echo "  Portainer:    ${INSTALL_META[portainer_url]}"
+  echo "  Gitea:        ${INSTALL_META[gitea_url]}"
+  echo "  OCIS:         ${INSTALL_META[ocis_url]}"
+  echo "  Vaultwarden:  ${INSTALL_META[vaultwarden_url]}"
+  echo "  Grafana:      ${INSTALL_META[grafana_url]}"
+  echo "  Prometheus:   ${INSTALL_META[prometheus_url]}"
+  echo "  Alertmanager: ${INSTALL_META[alertmanager_url]}"
+  echo "  ntfy:         ${INSTALL_META[ntfy_url]}"
 }
 
 # --- Menu loop ---

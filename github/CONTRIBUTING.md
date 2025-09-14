@@ -1,3 +1,17 @@
+🔑 Example with your repo
+
+Current → 0.3.3.57 (since 57 commits total)
+
+Next commit fix: correct typo → 0.3.4.58
+
+Next commit feat: add notifications → 0.4.0.59
+
+Next commit MAJOR: redesign → 1.0.0.60
+
+Random commit chore: update readme → 1.0.0.61
+
+So the last digit will always equal commit count, no matter what.
+
 # 🤝 Contributing to Atlas Infra
 
 Thank you for considering contributing to **Atlas Infra**!  

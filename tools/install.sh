@@ -380,11 +380,24 @@ echo
 echo -e "   This step is required to enable secure remote access over Tailscale."
 echo
 
+# --- Detect current version from git tag ---
+ATLAS_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+
 # --- Mark installation complete (with metadata) ---
 {
   echo "true"
-  echo "installed_at=$(date '+%Y-%m-%d %H:%M:%S')"
-  echo "atlas_version=1.0.0"
+  echo "installed_at=$(date '+%d-%m-%Y %H:%M:%S')"
+  echo "atlas_version=$ATLAS_VERSION"
   echo "hostname=$SERVER_NAME"
   echo "base_domain=$BASE_DOMAIN"
+
+  echo "homepage_url=http://$SERVER_NAME.$BASE_DOMAIN"
+  echo "portainer_url=http://portainer.$SERVER_NAME.$BASE_DOMAIN"
+  echo "gitea_url=http://git.$SERVER_NAME.$BASE_DOMAIN"
+  echo "ocis_url=http://cloud.$SERVER_NAME.$BASE_DOMAIN"
+  echo "vaultwarden_url=http://vault.$SERVER_NAME.$BASE_DOMAIN"
+  echo "grafana_url=http://grafana.$SERVER_NAME.$BASE_DOMAIN"
+  echo "prometheus_url=http://prometheus.$SERVER_NAME.$BASE_DOMAIN"
+  echo "alertmanager_url=http://alerts.$SERVER_NAME.$BASE_DOMAIN"
+  echo "ntfy_url=http://ntfy.$SERVER_NAME.$BASE_DOMAIN"
 } > "$CONFIG_DIR/installed.flag"
