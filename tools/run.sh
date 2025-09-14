@@ -196,15 +196,15 @@ echo
 # --- Show services function and URL ---
 show_services() {
   echo -e "${INFO}You can now access your server '${INSTALL_META[hostname]}' services via:${RESET}"
-  echo "  Homepage:     ${INSTALL_META[homepage_url]}"
-  echo "  Portainer:    ${INSTALL_META[portainer_url]}"
-  echo "  Gitea:        ${INSTALL_META[gitea_url]}"
-  echo "  OCIS:         ${INSTALL_META[ocis_url]}"
-  echo "  Vaultwarden:  ${INSTALL_META[vaultwarden_url]}"
-  echo "  Grafana:      ${INSTALL_META[grafana_url]}"
-  echo "  Prometheus:   ${INSTALL_META[prometheus_url]}"
-  echo "  Alertmanager: ${INSTALL_META[alertmanager_url]}"
-  echo "  ntfy:         ${INSTALL_META[ntfy_url]}"
+  echo "  Homepage:     http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/"
+  echo "  Portainer:    http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/portainer"
+  echo "  Gitea:        http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/gitea"
+  echo "  OCIS:         http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/ocis"
+  echo "  Vaultwarden:  http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/vault"
+  echo "  Grafana:      http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/grafana"
+  echo "  Prometheus:   http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/prometheus"
+  echo "  Alertmanager: http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/alerts"
+  echo "  ntfy:         http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/ntfy"
 }
 
 # --- Menu loop ---

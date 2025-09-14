@@ -79,15 +79,15 @@ From there, you can choose to **install**, **bootstrap**, **check sanity**, or *
 
 Once installed, access your services at:
 
-- **Homepage** → `http://<hostname>.<domain>`  
-- **Portainer** → `http://portainer.<hostname>.<domain>`  
-- **OCIS** → `http://cloud.<hostname>.<domain>`  
-- **Gitea** → `http://git.<hostname>.<domain>`  
-- **Vaultwarden** → `http://vault.<hostname>.<domain>`  
-- **Grafana** → `http://grafana.<hostname>.<domain>`  
-- **Prometheus** → `http://prometheus.<hostname>.<domain>`  
-- **Alertmanager** → `http://alerts.<hostname>.<domain>`  
-- **ntfy** → `http://ntfy.<hostname>.<domain>`  
+- **Homepage** → `http://<hostname>.<domain>/`
+- **Portainer** → `http://<hostname>.<domain>/portainer`
+- **OCIS** → `http://<hostname>.<domain>/ocis`
+- **Gitea** → `http://<hostname>.<domain>/gitea`
+- **Vaultwarden** → `http://<hostname>.<domain>/vault`
+- **Grafana** → `http://<hostname>.<domain>/grafana`
+- **Prometheus** → `http://<hostname>.<domain>/prometheus`
+- **Alertmanager** → `http://<hostname>.<domain>/alerts`
+- **ntfy** → `http://<hostname>.<domain>/ntfy`
 
 ---
 
