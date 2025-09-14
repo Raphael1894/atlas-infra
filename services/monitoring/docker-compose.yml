@@ -56,7 +56,7 @@ services:
       - ${DATA_ROOT}/alertmanager:/alertmanager
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.alerts.rule=Host(alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
+      - "traefik.http.routers.alerts.rule=Host(\"alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
       - "traefik.http.routers.alerts.entrypoints=web"
     restart: unless-stopped
     networks:

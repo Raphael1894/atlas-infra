@@ -16,7 +16,7 @@ services:
       - ${DATA_ROOT}/ocis:/var/lib/ocis
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ocis.rule=Host(cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
+      - "traefik.http.routers.ocis.rule=Host(\"cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
       - "traefik.http.routers.ocis.entrypoints=web"
     restart: unless-stopped
     networks:

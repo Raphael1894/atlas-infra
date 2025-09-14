@@ -16,7 +16,7 @@ services:
       - ${DATA_ROOT}/gitea:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gitea.rule=Host(git.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
+      - "traefik.http.routers.gitea.rule=Host(\"git.${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
       - "traefik.http.routers.gitea.entrypoints=web"
     restart: unless-stopped
     networks:
