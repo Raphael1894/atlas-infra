@@ -122,49 +122,7 @@ if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
   set +a
   set -u
 
-  # --- Prompt for values (Gitea, Vaultwarden, OCIS, Grafana, ntfy, CouchDB) ---
-  # same prompts as before...
-
-  # --- Write new .env ---
-  cat > "$ENV_FILE" <<EOF
-# Gitea
-GITEA_ADMIN_USER=$GITEA_USER
-GITEA_ADMIN_PASS=$GITEA_PASS
-GITEA_ADMIN_EMAIL=$GITEA_MAIL
-
-# Vaultwarden
-VW_SIGNUPS_ALLOWED=false
-VW_ADMIN_TOKEN=$VW_TOKEN
-
-# Grafana
-GRAFANA_ADMIN_USER=$GRAFANA_USER
-GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
-
-# ntfy
-NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
-
-# OCIS
-OCIS_ADMIN_USER=$OCIS_USER
-OCIS_ADMIN_PASS=$OCIS_PASS
-OCIS_ADMIN_USER_ID=958d7151-528b-42b1-9e3a-fc9e7f1f5d34
-OCIS_SYSTEM_USER_ID=admin
-PROXY_USER_ID=admin
-OCIS_JWT_SECRET=$OCIS_JWT_SECRET
-OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
-OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
-STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
-
-# CouchDB
-COUCHDB_USER=$COUCHDB_USER
-COUCHDB_PASSWORD=$COUCHDB_PASS
-EOF
-
-  echo -e "${SUCCESS}✅ Secrets written to $ENV_FILE${RESET}"
-else
-  echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
-fi
-
-  # Prompt new values
+  # --- Prompt new values ---
   echo -ne "${PROMPT}👉 Gitea admin username (default: atlas): ${RESET}"
   read -r GITEA_USER
   GITEA_USER=${GITEA_USER:-atlas}
@@ -217,7 +175,15 @@ fi
   read -r NTFY_ACCESS
   NTFY_ACCESS=${NTFY_ACCESS:-read-only}
 
-  # Write new .env
+  echo -ne "${PROMPT}👉 CouchDB username (default: admin): ${RESET}"
+  read -r COUCHDB_USER
+  COUCHDB_USER=${COUCHDB_USER:-admin}
+
+  echo -ne "${PROMPT}👉 CouchDB password (default: changeme): ${RESET}"
+  read -r COUCHDB_PASS
+  COUCHDB_PASS=${COUCHDB_PASS:-changeme}
+
+  # --- Write new .env ---
   cat > "$ENV_FILE" <<EOF
 # ── Gitea ────────────────────────────────────────────────
 GITEA_ADMIN_USER=$GITEA_USER
@@ -245,8 +211,15 @@ OCIS_JWT_SECRET=$OCIS_JWT_SECRET
 OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
 STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
+
+# ── CouchDB ─────────────────────────────────────────────
+COUCHDB_USER=$COUCHDB_USER
+COUCHDB_PASSWORD=$COUCHDB_PASS
 EOF
+
   echo -e "${SUCCESS}✅ Secrets written to $ENV_FILE${RESET}"
+else
+  echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
 fi
 
 # --- Run bootstrap ---
@@ -322,7 +295,6 @@ echo "   Pass: $COUCHDB_PASS"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/couchdb"
 echo
 
-
 if [ "${OCIS_JWT_SECRET_WAS_GENERATED:-false}" = true ]; then
   echo -e "${ERROR}${HIGHLIGHT}OCIS JWT Secret:${RESET} $OCIS_JWT_SECRET"
   echo "   → Required for internal service authentication."
@@ -364,4 +336,3 @@ ATLAS_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
   echo "alertmanager_url=http://$SERVER_NAME.$BASE_DOMAIN/alerts"
   echo "ntfy_url=http://$SERVER_NAME.$BASE_DOMAIN/ntfy"
 } > "$CONFIG_DIR/installed.flag"
-

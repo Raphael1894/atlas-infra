@@ -23,6 +23,7 @@ help:
 	@echo "  make logs         → follow logs from all containers"
 	@echo "  make restart NAME=stack  → restart one stack (e.g. NAME=cloud)"
 	@echo "  make clean        → remove all containers, networks, and volumes"
+	@echo "  make nuke         → ⚠️ stop & remove ALL containers, networks, images, and volumes"
 
 # --- Aliases ---
 up: up-all
@@ -67,13 +68,19 @@ clean:
 	docker system prune -af --volumes
 
 nuke:
-	@echo "⚠️  This will stop and remove ALL Docker containers, networks, images, and volumes."
+	@echo "☢️  💥  This will stop and remove ALL Docker containers, networks, images, and volumes."
 	@read -p "Are you sure? [y/N] " ans; \
 	if [ "$$ans" = "y" ] || [ "$$ans" = "Y" ]; then \
-		docker stop $$(docker ps -aq) || true; \
-		docker rm -vf $$(docker ps -aq) || true; \
+		if [ -n "$$(docker ps -aq)" ]; then \
+			echo "☢️  Stopping all containers..."; \
+			docker stop $$(docker ps -aq); \
+			echo "☢️  Removing all containers..."; \
+			docker rm -vf $$(docker ps -aq); \
+		fi; \
+		echo "💥 Cleaning up networks, images, and volumes..."; \
 		docker system prune -af --volumes; \
-		echo "✅ Docker environment fully reset."; \
+		echo "☢️💥  Docker environment fully reset. Boom!"; \
 	else \
 		echo "❌ Nuke cancelled."; \
 	fi
+
