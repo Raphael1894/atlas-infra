@@ -36,7 +36,7 @@ check_step () {
     echo -e "${ERROR}❌ FAILED${RESET}"
     echo -e "   ${WARN}Hint:${RESET} $hint"
 
-    if sudo docker ps -a --format '{{.Names}}' | grep -q "$service_name"; then
+    if sudo docker ps -a --format '{{.Names}}' | grep -qw "$service_name"; then
       sudo docker logs --tail=200 "$service_name" &> "logs/${service_name}.log" || true
       echo -e "   ${INFO}Logs saved to:${RESET} logs/${service_name}.log"
     else
@@ -61,28 +61,29 @@ check_step "Firewall active" "sudo ufw status | grep -q 'Status: active'" "Run: 
 
 # --- Core services ---
 echo -e "\n${HIGHLIGHT}🖥️  Core Services${RESET}"
-check_step "Proxy (Traefik)" "sudo docker ps --format '{{.Names}}' | grep -q proxy" "Run: make -f tools/Makefile restart NAME=proxy && check logs" "proxy"
-check_step "Dashboard (Homepage)" "sudo docker ps --format '{{.Names}}' | grep -q dashboard" "Run: make -f tools/Makefile restart NAME=dashboard" "dashboard"
-check_step "Portainer" "sudo docker ps --format '{{.Names}}' | grep -q portainer" "Run: make -f tools/Makefile restart NAME=portainer" "portainer"
+check_step "Proxy (Traefik)" "sudo docker ps --format '{{.Names}}' | grep -qw traefik" "Run: make -f tools/Makefile restart NAME=proxy" "traefik"
+check_step "Dashboard (Homepage)" "sudo docker ps --format '{{.Names}}' | grep -qw homepage" "Run: make -f tools/Makefile restart NAME=dashboard" "homepage"
+check_step "Portainer" "sudo docker ps --format '{{.Names}}' | grep -qw portainer" "Run: make -f tools/Makefile restart NAME=portainer" "portainer"
 
-# --- Data & collaboration ---
+# --- Storage & Collaboration ---
 echo -e "\n${HIGHLIGHT}📦 Storage & Collaboration${RESET}"
-check_step "OCIS (cloud)" "sudo docker ps --format '{{.Names}}' | grep -q cloud" "Run: make -f tools/Makefile restart NAME=cloud" "cloud"
-check_step "Gitea" "sudo docker ps --format '{{.Names}}' | grep -q knowledge" "Run: make -f tools/Makefile restart NAME=knowledge" "knowledge"
+check_step "OCIS (cloud)" "sudo docker ps --format '{{.Names}}' | grep -qw ocis" "Run: make -f tools/Makefile restart NAME=cloud" "ocis"
+check_step "Gitea" "sudo docker ps --format '{{.Names}}' | grep -qw gitea" "Run: make -f tools/Makefile restart NAME=knowledge" "gitea"
 
 # --- Security ---
 echo -e "\n${HIGHLIGHT}🔒 Security${RESET}"
-check_step "Vaultwarden" "sudo docker ps --format '{{.Names}}' | grep -q security" "Check config/.env for VW_ADMIN_TOKEN and restart" "security"
+check_step "Vaultwarden" "sudo docker ps --format '{{.Names}}' | grep -qw vaultwarden" "Check config/.env for VW_ADMIN_TOKEN and restart" "vaultwarden"
 
 # --- Monitoring ---
 echo -e "\n${HIGHLIGHT}📊 Monitoring${RESET}"
 for svc in prometheus grafana alertmanager victoriametrics node_exporter cadvisor; do
-  check_step "$svc" "sudo docker ps --format '{{.Names}}' | grep -q monitoring" "Run: make -f tools/Makefile restart NAME=monitoring" "monitoring"
+  check_step "$svc" "sudo docker ps --format '{{.Names}}' | grep -qw $svc" \
+    "Run: make -f tools/Makefile restart NAME=monitoring" "$svc"
 done
 
 # --- Notifications ---
 echo -e "\n${HIGHLIGHT}📣 Notifications${RESET}"
-check_step "ntfy" "sudo docker ps --format '{{.Names}}' | grep -q notifications" "Run: make -f tools/Makefile restart NAME=notifications" "notifications"
+check_step "ntfy" "sudo docker ps --format '{{.Names}}' | grep -qw ntfy" "Run: make -f tools/Makefile restart NAME=notifications" "ntfy"
 
 # --- Final report ---
 echo

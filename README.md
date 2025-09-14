@@ -15,6 +15,42 @@ Atlas is **reproducible**: wipe your host, rerun the installer, and you’re bac
 
 ---
 
+## 🌐 Prerequisite: Tailscale Domain
+
+Atlas requires a **resolvable base domain** to expose its services.  
+We strongly recommend using a **Tailscale tailnet domain**.
+
+### Why?
+
+- `lan` or `.local` hostnames will **not resolve reliably** across devices.  
+- Tailscale provides a globally accessible, secure DNS domain (`tailnet-1234.ts.net`).  
+- This ensures Atlas services like Gitea, Vaultwarden, Grafana, etc. are accessible from all your devices.
+
+### How to get your tailnet domain
+
+1. Go to the [Tailscale admin console](https://login.tailscale.com).  
+2. Open **DNS settings**.  
+3. Enable **MagicDNS**.  
+4. Copy your tailnet domain (looks like `tailnet-1234.ts.net`).  
+   - If you’ve set up a **custom domain**, you can use that instead.
+
+### During Install
+
+When prompted for `BASE_DOMAIN`, enter your tailnet domain. Example:
+
+```
+Hostname: atlas
+Base domain: tailnet-1234.ts.net
+```
+
+→ Your services will be available at:
+
+- Homepage → `http://atlas.tailnet-1234.ts.net`  
+- Gitea → `http://git.atlas.tailnet-1234.ts.net`  
+- Vaultwarden → `http://vault.atlas.tailnet-1234.ts.net`  
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Prepare Ubuntu Server
@@ -52,9 +88,6 @@ Once installed, access your services at:
 - **Prometheus** → `http://prometheus.<hostname>.<domain>`  
 - **Alertmanager** → `http://alerts.<hostname>.<domain>`  
 - **ntfy** → `http://ntfy.<hostname>.<domain>`  
-
-Default base domain = `lan`.  
-With hostname = `atlas`, you’d get e.g. `http://atlas.lan`.  
 
 ---
 
@@ -205,7 +238,7 @@ If something goes wrong:
 
 3. Read [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) for detailed fixes. 
 
-
+---
 
 ## 📜 License & Maintenance
 
@@ -229,4 +262,3 @@ Atlas Infra includes several docs to help you use and contribute:
 - [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) → Common issues and how to fix them  
 
 👉 Start with **bash atlas.sh** to launch the menu and explore your options.
-
