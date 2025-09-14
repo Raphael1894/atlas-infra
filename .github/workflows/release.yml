@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: write   # ✅ allows pushing tags & releases
 
 jobs:
   release:
@@ -28,7 +28,7 @@ jobs:
           # Extract version parts (MAJOR.MINOR.PATCH.BUILD)
           IFS='.' read -r major minor patch build <<< "${{ steps.get_tag.outputs.latest }}"
 
-          # Count ALL commits since repo init
+          # Count total commits since repo start
           commit_count=$(git rev-list --count HEAD)
 
           # Get commit messages since last tag
@@ -46,9 +46,20 @@ jobs:
             none)  ;; # no semantic bump, only commit count moves
           esac
 
-          # Force build = total commits
           new="$major.$minor.$patch.$commit_count"
           echo "new=$new" >> $GITHUB_OUTPUT
+
+      - name: Delete existing tag if present
+        run: |
+          tag="${{ steps.bump.outputs.new }}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "⚠️ Tag $tag exists locally, deleting..."
+            git tag -d "$tag"
+          fi
+          if git ls-remote --tags origin | grep -q "refs/tags/$tag"; then
+            echo "⚠️ Tag $tag exists on remote, deleting..."
+            git push origin :refs/tags/$tag
+          fi
 
       - name: Create and push new tag
         run: |
