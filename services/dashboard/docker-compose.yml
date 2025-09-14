@@ -8,14 +8,12 @@ services:
       - TZ=${TZ}
       - HOMEPAGE_ALLOWED_HOSTS=${ATLAS_HOSTNAME}.${BASE_DOMAIN}
     volumes:
-      - ./homepage.yaml:/config/homepage.yaml:ro
-      - ./data:/config/data
+      - ./homepage:/config        # mount directory, not single file
     labels:
-      - traefik.enable=true
-      # Catch-all: any request not matched by another router
-      - traefik.http.routers.homepage.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/`)
-      - traefik.http.services.homepage.loadbalancer.server.port=3000
-      - traefik.http.routers.homepage.priority=1
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.homepage.priority=1"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
     restart: unless-stopped
     networks:
       - atlas
