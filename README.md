@@ -45,9 +45,10 @@ Base domain: tailnet-1234.ts.net
 
 → Your services will be available at:
 
-- Homepage → `http://atlas.tailnet-1234.ts.net`  
-- Gitea → `http://git.atlas.tailnet-1234.ts.net`  
-- Vaultwarden → `http://vault.atlas.tailnet-1234.ts.net`  
+- Homepage → http://atlas.tailnet-1234.ts.net/
+- Gitea → http://atlas.tailnet-1234.ts.net/gitea
+- Vaultwarden → http://atlas.tailnet-1234.ts.net/vault
+- Grafana → http://atlas.tailnet-1234.ts.net/grafana
 
 ---
 

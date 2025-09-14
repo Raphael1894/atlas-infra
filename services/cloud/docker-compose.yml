@@ -4,7 +4,7 @@ services:
     container_name: ocis
     environment:
       - OCIS_INSECURE=true
-      - OCIS_URL=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis
+      - OCIS_URL=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}
       - OCIS_JWT_SECRET=${OCIS_JWT_SECRET}
       - OCIS_MACHINE_AUTH_API_KEY=${OCIS_MACHINE_AUTH_API_KEY}
       - OCIS_TRANSFER_SECRET=${OCIS_TRANSFER_SECRET}

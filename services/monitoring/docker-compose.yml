@@ -12,7 +12,7 @@ services:
       - traefik.http.services.prometheus.loadbalancer.server.port=9090
       - traefik.http.routers.prometheus.middlewares=prometheus-strip
       - traefik.http.middlewares.prometheus-strip.stripprefix.prefixes=/prometheus
-      - traefik.http.routers.vault.priority=10
+      - traefik.http.routers.prometheus.priority=10
     restart: unless-stopped
     networks:
       - atlas_net
@@ -31,7 +31,7 @@ services:
       - traefik.http.services.victoria.loadbalancer.server.port=8428
       - traefik.http.routers.victoria.middlewares=victoria-strip
       - traefik.http.middlewares.victoria-strip.stripprefix.prefixes=/victoria
-      - traefik.http.routers.vault.priority=10
+      - traefik.http.routers.victoria.priority=10
     restart: unless-stopped
     networks:
       - atlas_net
@@ -40,6 +40,8 @@ services:
     image: grafana/grafana:10.4.5
     container_name: grafana
     environment:
+      - GF_SERVER_ROOT_URL=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
     volumes:
@@ -51,7 +53,7 @@ services:
       - traefik.http.services.grafana.loadbalancer.server.port=3000
       - traefik.http.routers.grafana.middlewares=grafana-strip
       - traefik.http.middlewares.grafana-strip.stripprefix.prefixes=/grafana
-      - traefik.http.routers.vault.priority=10
+      - traefik.http.routers.grafana.priority=10
     depends_on: [prometheus, victoriametrics]
     restart: unless-stopped
     networks:

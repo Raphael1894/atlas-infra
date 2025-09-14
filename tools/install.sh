@@ -346,21 +346,26 @@ fi
 echo -e "${HIGHLIGHT}Gitea Admin:${RESET}"
 echo "   User: $GITEA_USER"
 echo "   Pass: $GITEA_PASS"
-echo "   URL:  http://git.$SERVER_NAME.$BASE_DOMAIN"
+echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/gitea"
 echo
 
 # Grafana
 echo -e "${HIGHLIGHT}Grafana Admin:${RESET}"
 echo "   User: $GRAFANA_USER"
 echo "   Pass: $GRAFANA_PASS"
-echo "   URL:  http://grafana.$SERVER_NAME.$BASE_DOMAIN"
+echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/grafana"
 echo
 
 # OCIS
 echo -e "${HIGHLIGHT}OCIS Admin:${RESET}"
 echo "   User: $OCIS_USER"
 echo "   Pass: $OCIS_PASS"
-echo "   URL:  http://cloud.$SERVER_NAME.$BASE_DOMAIN"
+echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ocis"
+echo
+
+# ntfy
+echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} $NTFY_ACCESS"
+echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ntfy"
 echo
 
 if [ "${OCIS_JWT_SECRET_WAS_GENERATED:-false}" = true ]; then
@@ -374,11 +379,6 @@ if [ "${OCIS_MACHINE_KEY_WAS_GENERATED:-false}" = true ]; then
   echo "   → Required for service-to-service authentication."
   echo
 fi
-
-# ntfy
-echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} $NTFY_ACCESS"
-echo "   URL:  http://ntfy.$SERVER_NAME.$BASE_DOMAIN"
-echo
 
 # --- Post-install reminder ---
 echo -e "${INFO}👉 Reminder:${RESET}"
