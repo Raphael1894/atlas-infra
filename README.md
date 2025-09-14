@@ -3,7 +3,7 @@
 **Atlas** is a fully automated **homelab-in-a-box**.  
 It turns a bare Ubuntu Server into a private core server with:
 
-- 📦 **Storage & Collaboration** → OCIS, Gitea, Obsidian Vault sync  
+- 📦 **Storage & Collaboration** → OCIS, Gitea, Obsidian Vault sync (via CouchDB LiveSync)  
 - 🔒 **Security** → Vaultwarden password manager  
 - 📊 **Monitoring & Metrics** → Prometheus, Grafana, Alertmanager, VictoriaMetrics  
 - 📣 **Notifications** → ntfy push alerts  
@@ -84,6 +84,7 @@ Once installed, access your services at:
 - **Portainer** → `http://<hostname>.<domain>/portainer`
 - **OCIS** → `http://<hostname>.<domain>/ocis`
 - **Gitea** → `http://<hostname>.<domain>/gitea`
+- **CouchDB** → `http://<hostname>.<domain>/couchdb` (used by Obsidian LiveSync plugin)
 - **Vaultwarden** → `http://<hostname>.<domain>/vault`
 - **Grafana** → `http://<hostname>.<domain>/grafana`
 - **Prometheus** → `http://<hostname>.<domain>/prometheus`
@@ -106,6 +107,10 @@ Once installed, access your services at:
   - Service admin creds & tokens  
   - ⚠️ Never commit this file (it’s in `.gitignore`)  
   - Regenerate anytime by re-running `install.sh`  
+
+- **CouchDB**  
+  - Used by Obsidian LiveSync plugin for real-time vault sync  
+  - Credentials stored in `config/.env` (`COUCHDB_USER` / `COUCHDB_PASSWORD`)
 
 ---
 
@@ -130,6 +135,11 @@ make -f tools/Makefile clean        # Remove all containers, networks, and volum
 - **Vaultwarden admin token** is critical — if auto-generated, it will be shown at the end of the install. Save it securely.  
 - Only LAN and Tailscale have access by default (firewall restricts external WAN access).  
 - Always keep Ubuntu, Docker, and Atlas updated.  
+
+- CouchDB credentials are required by the Obsidian LiveSync plugin. Keep them private.  
+- If you use Obsidian across multiple devices, configure LiveSync with:
+  - **Server URL**: `http://<hostname>.<domain>/couchdb`
+  - **Username / Password**: from your `.env` file
 
 ---
 
@@ -190,6 +200,22 @@ cd atlas-infra
 ```
 
 → Identical environment, every time.  
+
+---
+
+## 📝 Obsidian Vault Sync (LiveSync)
+
+Atlas includes [CouchDB](https://couchdb.apache.org/), which powers the **Obsidian LiveSync plugin**.  
+
+👉 Setup:
+
+1. Install the **Obsidian LiveSync** community plugin.  
+2. In plugin settings, enter your Atlas CouchDB details:  
+   - Server URL: `http://<hostname>.<domain>/couchdb`  
+   - Username / Password: from your Atlas `.env`  
+3. Open your vault on any device → edits sync instantly.  
+
+✨ This provides Dropbox/iCloud-like sync for Obsidian, but fully self-hosted.
 
 ---
 

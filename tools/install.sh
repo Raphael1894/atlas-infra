@@ -175,6 +175,16 @@ if [ -f "$ENV_FILE" ]; then
     read -r NTFY_ACCESS
     NTFY_ACCESS=${NTFY_ACCESS:-${NTFY_AUTH_DEFAULT_ACCESS:-read-only}}
 
+    # --- Prompt for CouchDB ---
+    echo -ne "${PROMPT}👉 CouchDB username (default: couchdb): ${RESET}"
+    read -r COUCHDB_USER
+    COUCHDB_USER=${COUCHDB_USER:-couchdb}
+
+    echo -ne "${PROMPT}👉 CouchDB password (default: changeme): ${RESET}"
+    read -r COUCHDB_PASS
+    COUCHDB_PASS=${COUCHDB_PASS:-changeme}
+
+
     # Confirm overwrite
     echo
     echo -ne "${WARN}⚠️  Overwrite $ENV_FILE with these new values?${RESET} [y/n]: "
@@ -369,6 +379,14 @@ echo
 echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} $NTFY_ACCESS"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ntfy"
 echo
+
+# CouchDB
+echo -e "${HIGHLIGHT}CouchDB:${RESET}"
+echo "   User: $COUCHDB_USER"
+echo "   Pass: $COUCHDB_PASS"
+echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/couchdb"
+echo
+
 
 if [ "${OCIS_JWT_SECRET_WAS_GENERATED:-false}" = true ]; then
   echo -e "${ERROR}${HIGHLIGHT}OCIS JWT Secret:${RESET} $OCIS_JWT_SECRET"
