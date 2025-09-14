@@ -1,0 +1,10 @@
+- Docs:
+    - Atlas Infra GitHub:
+        - icon: mdi:github
+          href: https://github.com/Raphael1894/atlas-infra
+    - Tailscale Admin:
+        - icon: mdi:lock
+          href: https://login.tailscale.com
+    - Grafana Docs:
+        - icon: mdi:book-open
+          href: https://grafana.com/docs/

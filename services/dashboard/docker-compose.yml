@@ -7,20 +7,19 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
       - HOMEPAGE_ALLOWED_HOSTS=${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-      - HOMEPAGE_CONFIG=/config/homepage.yaml
     volumes:
-      - ./homepage:/config        # mount directory, not single file
+      - ./homepage:/config
     labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.homepage.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/`)"
-    - "traefik.http.routers.homepage.entrypoints=web"
-    - "traefik.http.services.homepage.loadbalancer.server.port=3000"
-    - "traefik.http.routers.homepage.priority=1"
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.homepage.entrypoints=web"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+      - "traefik.http.routers.homepage.priority=1"
     restart: unless-stopped
     networks:
       - atlas_net
 
 networks:
-  atlas:
+  atlas_net:
     external: true
     name: ${ATLAS_DOCKER_NETWORK}
