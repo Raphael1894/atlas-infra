@@ -11,13 +11,14 @@ services:
     volumes:
       - ./homepage:/config        # mount directory, not single file
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.homepage.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.homepage.priority=1"
-      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+    - "traefik.enable=true"
+    - "traefik.http.routers.homepage.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/`)"
+    - "traefik.http.routers.homepage.entrypoints=web"
+    - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+    - "traefik.http.routers.homepage.priority=1"
     restart: unless-stopped
     networks:
-      - atlas
+      - atlas_net
 
 networks:
   atlas:
