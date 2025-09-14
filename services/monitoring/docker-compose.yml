@@ -7,9 +7,12 @@ services:
       - ${DATA_ROOT}/prometheus:/prometheus
     command: ["--config.file=/etc/prometheus/prometheus.yml"]
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.prom.rule=Host(prometheus.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
-      - "traefik.http.routers.prom.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.prometheus.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/prometheus`)
+      - traefik.http.services.prometheus.loadbalancer.server.port=9090
+      - traefik.http.routers.prometheus.middlewares=prometheus-strip
+      - traefik.http.middlewares.prometheus-strip.stripprefix.prefixes=/prometheus
+      - traefik.http.routers.vault.priority=10
     restart: unless-stopped
     networks:
       - atlas_net
@@ -23,9 +26,12 @@ services:
     volumes:
       - ${DATA_ROOT}/victoriametrics:/victoria-metrics-data
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.victoria.rule=Host(vm.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
-      - "traefik.http.routers.victoria.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.victoria.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/victoria`)
+      - traefik.http.services.victoria.loadbalancer.server.port=8428
+      - traefik.http.routers.victoria.middlewares=victoria-strip
+      - traefik.http.middlewares.victoria-strip.stripprefix.prefixes=/victoria
+      - traefik.http.routers.vault.priority=10
     restart: unless-stopped
     networks:
       - atlas_net
@@ -40,9 +46,12 @@ services:
       - ${DATA_ROOT}/grafana:/var/lib/grafana
       - ./grafana-provisioning:/etc/grafana/provisioning
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(grafana.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
-      - "traefik.http.routers.grafana.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/grafana`)
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
+      - traefik.http.routers.grafana.middlewares=grafana-strip
+      - traefik.http.middlewares.grafana-strip.stripprefix.prefixes=/grafana
+      - traefik.http.routers.vault.priority=10
     depends_on: [prometheus, victoriametrics]
     restart: unless-stopped
     networks:
@@ -55,9 +64,12 @@ services:
       - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - ${DATA_ROOT}/alertmanager:/alertmanager
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.alerts.rule=Host(\"alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
-      - "traefik.http.routers.alerts.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.alertmanager.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/alerts`)
+      - traefik.http.services.alertmanager.loadbalancer.server.port=9093
+      - traefik.http.routers.alertmanager.middlewares=alertmanager-strip
+      - traefik.http.middlewares.alertmanager-strip.stripprefix.prefixes=/alerts
+      - traefik.http.routers.alertmanager.priority=10
     restart: unless-stopped
     networks:
       - atlas_net

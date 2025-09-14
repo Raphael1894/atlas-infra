@@ -15,9 +15,12 @@ services:
     volumes:
       - ${DATA_ROOT}/gitea:/data
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.gitea.rule=Host(\"git.${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
-      - "traefik.http.routers.gitea.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.gitea.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/gitea`)
+      - traefik.http.services.gitea.loadbalancer.server.port=3000
+      - traefik.http.routers.gitea.middlewares=gitea-strip
+      - traefik.http.middlewares.gitea-strip.stripprefix.prefixes=/gitea
+      - traefik.http.routers.alertmanager.priority=10
     restart: unless-stopped
     networks:
       - atlas_net

@@ -11,9 +11,11 @@ services:
       - ${DATA_ROOT}/homepage:/config
       - ./homepage.yaml:/config/homepage.yaml:ro
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.homepage.rule=Host(\"${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
-      - "traefik.http.routers.homepage.entrypoints=web"
+      - traefik.enable=true
+      # Catch-all: any request not matched by another router
+      - traefik.http.routers.homepage.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/`)
+      - traefik.http.services.homepage.loadbalancer.server.port=3000
+      - traefik.http.routers.homepage.priority=1
     restart: unless-stopped
     networks:
       - atlas

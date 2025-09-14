@@ -1,28 +1,98 @@
 title: Atlas
 theme: dark
+color: slate
+icon: mdi:server
+
+layout:
+  System: { style: row }
+  Core: { style: row }
+  Security: { style: row }
+  Monitoring: { style: row }
+  Shortcuts: { style: row }
+
 sections:
+  - System:
+      - Resources:
+          icon: mdi:chip
+          widget:
+            type: resources
+            cpu: true
+            memory: true
+            disk: /
+            uptime: true
+      - Docker:
+          icon: mdi:docker
+          widget:
+            type: docker
+            url: unix:///var/run/docker.sock
+            containers: true
+      - Prometheus Targets:
+          icon: mdi:check-network
+          widget:
+            type: prometheus
+            url: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/prometheus
+            query: up
+            legend: instance
+            label: "Targets health"
+
   - Core:
-    - Portainer:
-      icon: mdi:dock-left
-      href: http://portainer.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-    - Gitea:
-      icon: mdi:git
-      href: http://git.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-    - OCIS:
-      icon: mdi:cloud
-      href: http://cloud.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-    - Vaultwarden:
-      icon: mdi:key
-      href: http://vault.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-    - Grafana:
-      icon: mdi:chart-line
-      href: http://grafana.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-    - Prometheus:
-      icon: mdi:database
-      href: http://prometheus.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-    - Alertmanager:
-      icon: mdi:alert
-      href: http://alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
-    - ntfy:
-      icon: mdi:bell
-      href: http://ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+      - Portainer:
+          icon: mdi:dock-left
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/portainer
+          description: Container management
+      - Gitea:
+          icon: mdi:git
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/gitea
+          description: Git hosting & collaboration
+      - OCIS:
+          icon: mdi:cloud
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis
+          description: File storage & collaboration
+
+  - Security:
+      - Vaultwarden:
+          icon: mdi:key
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/vault
+          description: Password manager
+
+  - Monitoring:
+      - Grafana:
+          icon: mdi:chart-line
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/grafana
+          description: Dashboards & visualization
+          widget:
+            type: grafana
+            url: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/grafana
+      - Prometheus:
+          icon: mdi:database
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/prometheus
+          description: Metrics backend
+      - Alertmanager:
+          icon: mdi:alert
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/alerts
+          description: Alert routing
+      - ntfy:
+          icon: mdi:bell
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ntfy
+          description: Push notifications
+          widget:
+            type: ntfy
+            url: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ntfy
+
+  - Shortcuts:
+      - Tailscale Admin:
+          icon: mdi:lock-network
+          href: https://login.tailscale.com/admin/machines
+          description: Manage tailnet devices
+      - GitHub:
+          icon: mdi:github
+          href: https://github.com/
+          description: Browse repositories
+      - Docs:
+          icon: mdi:book-open-page-variant
+          href: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis/apps/files
+          description: Atlas knowledge base
+      - Server Shell:
+          icon: mdi:console
+          href: ssh://${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+          description: Quick SSH access

@@ -7,8 +7,13 @@ services:
       - ${DATA_ROOT}/portainer:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(\"portainer.${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
-      - "traefik.http.routers.portainer.entrypoints=web"
+      # One hostname for all services
+      - "traefik.http.routers.portainer.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/portainer`)"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      # Strip `/portainer` so the backend sees `/`
+      - "traefik.http.routers.portainer.middlewares=portainer-strip"
+      - "traefik.http.middlewares.portainer-strip.stripprefix.prefixes=/portainer"
+      - traefik.http.routers.vault.priority=10
     restart: unless-stopped
     networks:
       - atlas_net

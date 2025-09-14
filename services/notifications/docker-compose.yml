@@ -10,9 +10,12 @@ services:
     volumes:
       - ${DATA_ROOT}/ntfy:/var/lib/ntfy
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ntfy.rule=Host(\"ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
-      - "traefik.http.routers.ntfy.entrypoints=web"
+      - traefik.enable=true
+      - traefik.http.routers.ntfy.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/ntfy`)
+      - traefik.http.services.ntfy.loadbalancer.server.port=80
+      - traefik.http.routers.ntfy.middlewares=ntfy-strip
+      - traefik.http.middlewares.ntfy-strip.stripprefix.prefixes=/ntfy
+      - traefik.http.routers.vault.priority=10
     restart: unless-stopped
     networks:
       - atlas_net
