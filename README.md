@@ -147,43 +147,33 @@ make -f tools/Makefile clean        # Remove all containers, networks, and volum
 
 ```
 atlas-infra/
-├── atlas.sh                 # Root wrapper → launches Atlas Launcher
-├── config/                  # Configs and secrets
-│   ├── config-templates/    # Example blueprints (safe to copy)
-│   ├── server_config.env    # Active server config (safe to commit)
-│   └── .env                 # Secrets (never commit, auto-generated)
-├── docs/                    # Documentation
-│   └── TROUBLESHOOTING.md
-├── .github/                 # Community & GitHub metadata
-│   ├── CONTRIBUTING.md
-│   ├── CODE_OF_CONDUCT.md
-│   ├── ISSUE_TEMPLATE.md
-│   ├── PULL_REQUEST_TEMPLATE.md
-│   └── SECURITY.md
-├── services/                # Modular service stacks (Docker Compose)
-│   ├── proxy/               # Traefik reverse proxy
-│   ├── dashboard/           # Homepage dashboard
-│   │   ├── docker-compose.yml
-│   │   └── homepage/        # Homepage config & runtime data
-│   │       ├── homepage.yaml   # Dashboard definition
-│   │       └── data/           # Homepage generated settings & cache
-│   ├── portainer/           # Portainer manager
-│   ├── cloud/               # OCIS (storage & collaboration)
-│   ├── knowledge/           # Gitea + Obsidian sync
-│   ├── security/            # Vaultwarden password manager
-│   ├── monitoring/          # Prometheus, Grafana, Alertmanager
-│   ├── notifications/       # ntfy push notifications
-│   └── scripts/             # System setup scripts (firewall, tailscale, etc.)
-└── tools/                   # Dev & runtime utilities
-    ├── run.sh               # Atlas Launcher (menu)
-    ├── install.sh           # Interactive installer
-    ├── bootstrap.sh         # System prep & core services
-    ├── prepare-runtime.sh   # Export runtime-only folder
-    ├── sanity-check.sh      # Quick health check
-    ├── troubleshoot.sh      # Advanced troubleshooting
-    ├── network.sh           # Network setup helper
-    ├── colors.sh            # Shared color codes for scripts
-    └── Makefile             # Manage Docker stacks
+├── atlas.sh                # Root wrapper → launches Atlas Launcher
+├── config/                 # Server configs & secrets
+│ ├── config-templates/     # Example blueprints (safe to copy)
+│ ├── server_config.env     # Active server config (safe to commit)
+│ └── .env                  # Secrets (never commit)
+├── docs/                   # Documentation (e.g. TROUBLESHOOTING.md)
+├── github/                 # Community & GitHub metadata
+├── services/               # Modular service stacks (Docker Compose)
+│ ├── proxy/                # Traefik reverse proxy
+│ ├── dashboard/            # Homepage dashboard
+│ ├── portainer/            # Portainer manager
+│ ├── cloud/                # OCIS (file storage & collaboration)
+│ ├── knowledge/            # Knowledge stack (Gitea + CouchDB for Obsidian sync)
+│ ├── security/             # Vaultwarden password manager
+│ ├── monitoring/           # Prometheus, Grafana, Alertmanager
+│ ├── notifications/        # ntfy push notifications
+│ └── scripts/              # System setup scripts (firewall, tailscale, etc.)
+└── tools/                  # Dev & runtime utilities
+    ├── run.sh              # Atlas Launcher (menu)
+    ├── install.sh          # Interactive installer
+    ├── bootstrap.sh        # System prep & core services
+    ├── prepare-runtime.sh  # Export runtime-only folder
+    ├── sanity-check.sh     # Quick health check
+    ├── troubleshoot.sh     # Advanced troubleshooting
+    ├── network.sh          # Network setup helper
+    ├── colors.sh           # Shared color codes for scripts
+    └── Makefile            # Manage Docker stacks
 ```
 
 ---
