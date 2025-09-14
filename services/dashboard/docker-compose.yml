@@ -11,7 +11,7 @@ services:
       - ./homepage.yaml:/config/homepage.yaml:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.homepage.rule=Host(${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
+      - "traefik.http.routers.homepage.rule=Host(\"${ATLAS_HOSTNAME}.${BASE_DOMAIN}\")"
       - "traefik.http.routers.homepage.entrypoints=web"
     restart: unless-stopped
     networks:
