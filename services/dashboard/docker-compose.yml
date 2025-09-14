@@ -7,6 +7,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
       - HOMEPAGE_ALLOWED_HOSTS=${ATLAS_HOSTNAME}.${BASE_DOMAIN}
+      - HOMEPAGE_CONFIG=/config/homepage.yaml
     volumes:
       - ./homepage:/config        # mount directory, not single file
     labels:
