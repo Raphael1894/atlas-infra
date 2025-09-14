@@ -65,3 +65,15 @@ restart:
 
 clean:
 	docker system prune -af --volumes
+
+nuke:
+	@echo "⚠️  This will stop and remove ALL Docker containers, networks, images, and volumes."
+	@read -p "Are you sure? [y/N] " ans; \
+	if [ "$$ans" = "y" ] || [ "$$ans" = "Y" ]; then \
+		docker stop $$(docker ps -aq) || true; \
+		docker rm -vf $$(docker ps -aq) || true; \
+		docker system prune -af --volumes; \
+		echo "✅ Docker environment fully reset."; \
+	else \
+		echo "❌ Nuke cancelled."; \
+	fi

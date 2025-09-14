@@ -126,7 +126,10 @@ make -f tools/Makefile ps           # Show running containers
 make -f tools/Makefile logs         # Tail logs for all containers
 make -f tools/Makefile restart NAME=cloud   # Restart one stack (example: cloud)
 make -f tools/Makefile clean        # Remove all containers, networks, and volumes
+make -f tools/Makefile nuke         # ⚠️ Stop & remove ALL Docker containers, networks, images, and volumes
 ```
+⚠️ Warning: nuke is destructive.
+It resets Docker completely (like a factory reset). Only use it if you want to wipe all containers, images, and volumes, not just Atlas.
 
 ---
 
@@ -271,3 +274,4 @@ Atlas Infra includes several docs to help you use and contribute:
 - [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) → Common issues and how to fix them  
 
 👉 Start with **bash atlas.sh** to launch the menu and explore your options.
+
