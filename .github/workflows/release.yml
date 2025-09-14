@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  contents: write   # ✅ allows pushing tags & releases
+  contents: write
 
 jobs:
   release:
@@ -64,6 +64,14 @@ jobs:
             echo "⚠️ Tag $tag exists on remote, deleting..."
             git push origin :refs/tags/$tag
           fi
+
+      - name: Delete GitHub Release if exists
+        uses: dev-drprasad/delete-tag-and-release@v1.0
+        with:
+          tag_name: ${{ steps.bump.outputs.new }}
+          delete_release: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create and push new tag
         run: |
