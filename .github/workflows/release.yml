@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -25,7 +28,7 @@ jobs:
           # Extract version parts (MAJOR.MINOR.PATCH.BUILD)
           IFS='.' read -r major minor patch build <<< "${{ steps.get_tag.outputs.latest }}"
 
-          # Count total commits
+          # Count ALL commits since repo init
           commit_count=$(git rev-list --count HEAD)
 
           # Get commit messages since last tag
@@ -43,6 +46,7 @@ jobs:
             none)  ;; # no semantic bump, only commit count moves
           esac
 
+          # Force build = total commits
           new="$major.$minor.$patch.$commit_count"
           echo "new=$new" >> $GITHUB_OUTPUT
 
