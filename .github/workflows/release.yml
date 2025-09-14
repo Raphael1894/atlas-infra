@@ -19,21 +19,28 @@ jobs:
       - name: Get latest tag
         id: get_tag
         run: |
-          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0.0")
+          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           echo "latest=$latest" >> $GITHUB_OUTPUT
 
       - name: Detect version bump
         id: bump
         run: |
-          # Extract version parts (MAJOR.MINOR.PATCH.BUILD)
-          IFS='.' read -r major minor patch build <<< "${{ steps.get_tag.outputs.latest }}"
-
-          # Count total commits since repo start
+          # Count total commits
           commit_count=$(git rev-list --count HEAD)
 
-          # Get commit messages since last tag
-          commits=$(git log ${{ steps.get_tag.outputs.latest }}..HEAD --pretty=format:"%s")
+          # If no tag exists yet → start at baseline 0.3.3
+          if [ -z "${{ steps.get_tag.outputs.latest }}" ]; then
+            major=0
+            minor=3
+            patch=3
+            commits=$(git log --pretty=format:"%s")
+          else
+            # Extract version parts from latest tag
+            IFS='.' read -r major minor patch build <<< "${{ steps.get_tag.outputs.latest }}"
+            commits=$(git log ${{ steps.get_tag.outputs.latest }}..HEAD --pretty=format:"%s")
+          fi
 
+          # Detect bump type
           bump="none"
           if echo "$commits" | grep -qiE '^fix'; then bump="patch"; fi
           if echo "$commits" | grep -qiE '^feat'; then bump="minor"; fi
@@ -43,7 +50,7 @@ jobs:
             major) major=$((major+1)); minor=0; patch=0 ;;
             minor) minor=$((minor+1)); patch=0 ;;
             patch) patch=$((patch+1)) ;;
-            none)  ;; # no semantic bump, only commit count moves
+            none)  ;; # no semantic bump, just update build number
           esac
 
           new="$major.$minor.$patch.$commit_count"
