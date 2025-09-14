@@ -1,17 +1,3 @@
-🔑 Example with your repo
-
-Current → 0.3.3.57 (since 57 commits total)
-
-Next commit fix: correct typo → 0.3.4.58
-
-Next commit feat: add notifications → 0.4.0.59
-
-Next commit MAJOR: redesign → 1.0.0.60
-
-Random commit chore: update readme → 1.0.0.61
-
-So the last digit will always equal commit count, no matter what.
-
 # 🤝 Contributing to Atlas Infra
 
 Thank you for considering contributing to **Atlas Infra**!  
@@ -100,6 +86,36 @@ This will:
 - Never commit `config/.env` (contains passwords/tokens).  
 - `config/server_config.env` is safe to commit (identity + paths).  
 - Always test changes in a VM or dedicated test environment before production.
+
+---
+
+## 📦 Versioning & Releases
+
+Atlas Infra uses **semantic versioning with Git tags**.  
+Each version follows the format:  
+
+```
+MAJOR.MINOR.PATCH.BUILD
+```
+
+- **MAJOR** → incremented when a commit message starts with `MAJOR:` (breaking changes).  
+- **MINOR** → incremented when a commit message starts with `feat:` (new features).  
+- **PATCH** → incremented when a commit message starts with `fix:` (bug fixes).  
+- **BUILD** → always equals the total number of commits in the repository.  
+
+Example flow:  
+- First release → `0.3.3.59` (59 commits in repo).  
+- New commit with `fix:` → `0.3.3.60`.  
+- New commit with `feat:` → `0.4.0.61`.  
+- New commit with `MAJOR:` → `1.0.0.62`.  
+- Normal commit with no prefix → `x.x.x.<commit_count>` (only BUILD changes).  
+
+### 🛠 How to work with versions
+- No need to manually create tags.  
+- A GitHub Action automatically increments version numbers on **push to `main`**.  
+- Each new tag creates a GitHub Release with commit history included.  
+
+👉 **Contributor rule**: use the correct prefix (`fix:`, `feat:`, `MAJOR:`) in your commit messages to ensure proper versioning.
 
 ---
 

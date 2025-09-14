@@ -35,8 +35,11 @@ if [ -f "$INSTALLED_FLAG" ]; then
       *_url) INSTALL_META["$key"]=$value ;;
     esac
   done < "$INSTALLED_FLAG"
+else
+  # No flag yet → fallback to Git version
+  GIT_VERSION=$(git -C "$SCRIPT_DIR/.." describe --tags --abbrev=0 2>/dev/null || echo "dev")
+  INSTALL_META["atlas_version"]=$GIT_VERSION
 fi
-
 
 MISSING=0
 for file in "${REQUIRED_FILES[@]}"; do
@@ -185,8 +188,9 @@ echo -e "${HIGHLIGHT}${INFO}=========================================${RESET}"
 if [ "$ATLAS_INSTALLED" = true ]; then
   echo -e "${SUCCESS}✅ Installed on:${RESET} ${INSTALL_META[installed_at]:-unknown}"
   echo -e "${PROMPT}💻 Host:${RESET} ${INSTALL_META[hostname]:-unknown}.${INSTALL_META[base_domain]:-unknown}"
-  echo -e "${WARN}📦 Version:${RESET} ${INSTALL_META[atlas_version]:-dev}"
 fi
+
+echo -e "${WARN}📦 Version:${RESET} ${INSTALL_META[atlas_version]:-dev}"
 echo
 
 # --- Show services function and URL ---
