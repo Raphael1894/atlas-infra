@@ -96,138 +96,124 @@ fi
 
 # --- Handle .env secrets ---
 ENV_FILE="$CONFIG_DIR/.env"
+TEMPLATE_FILE="$TEMPLATES_DIR/.env.template"
 
-if [ -f "$ENV_FILE" ]; then
-  echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/n]: "
-  read -r MODIFY_ENV
-  MODIFY_ENV=${MODIFY_ENV,,}
-
-  if [[ "$MODIFY_ENV" != "y" && "$MODIFY_ENV" != "yes" ]]; then
-    echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
+# If no .env, copy from template
+if [ ! -f "$ENV_FILE" ]; then
+  if [ -f "$TEMPLATE_FILE" ]; then
+    echo -e "${WARN}⚠️  No .env found. Creating one from template...${RESET}"
+    cp "$TEMPLATE_FILE" "$ENV_FILE"
   else
-    # Prompt new values
-    echo -ne "${PROMPT}👉 Gitea admin username (default: ${GITEA_ADMIN_USER:-atlas}): ${RESET}"
-    read -r GITEA_USER
-    GITEA_USER=${GITEA_USER:-${GITEA_ADMIN_USER:-atlas}}
+    echo -e "${ERROR}❌ Missing $TEMPLATE_FILE. Cannot continue.${RESET}"
+    exit 1
+  fi
+fi
 
-    echo -ne "${PROMPT}👉 Gitea admin password (default: ${GITEA_ADMIN_PASS:-changeme}): ${RESET}"
-    read -r GITEA_PASS
-    GITEA_PASS=${GITEA_PASS:-${GITEA_ADMIN_PASS:-changeme}}
+# Ask user if they want to update .env
+echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/n]: "
+read -r MODIFY_ENV
+MODIFY_ENV=${MODIFY_ENV,,}
 
-    echo -ne "${PROMPT}👉 Gitea admin email (default: ${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}): ${RESET}"
-    read -r GITEA_MAIL
-    GITEA_MAIL=${GITEA_MAIL:-${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}}
+if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
+  # Load existing .env
+  set +u
+  set -a
+  source "$ENV_FILE"
+  set +a
+  set -u
 
-    # --- Prompt for Vaultwarden ---
-    VW_TOKEN_WAS_GENERATED=false
-    echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
-    read -r VW_TOKEN
-    if [ -z "$VW_TOKEN" ]; then
-      VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
-      VW_TOKEN_WAS_GENERATED=true
-      echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
-    fi
+  # --- Prompt for values ---
+  echo -ne "${PROMPT}👉 Gitea admin username (default: ${GITEA_ADMIN_USER:-atlas}): ${RESET}"
+  read -r GITEA_USER
+  GITEA_USER=${GITEA_USER:-${GITEA_ADMIN_USER:-atlas}}
 
-    # --- Prompt for OCIS (OwnCloud Infinite Scale) ---
-    OCIS_JWT_SECRET_WAS_GENERATED=false
-    OCIS_MACHINE_KEY_WAS_GENERATED=false
+  echo -ne "${PROMPT}👉 Gitea admin password (default: ${GITEA_ADMIN_PASS:-changeme}): ${RESET}"
+  read -r GITEA_PASS
+  GITEA_PASS=${GITEA_PASS:-${GITEA_ADMIN_PASS:-changeme}}
 
-    echo -ne "${PROMPT}👉 oCIS admin username (default: admin): ${RESET}"
-    read -r OCIS_USER
-    OCIS_USER=${OCIS_USER:-admin}
+  echo -ne "${PROMPT}👉 Gitea admin email (default: ${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}): ${RESET}"
+  read -r GITEA_MAIL
+  GITEA_MAIL=${GITEA_MAIL:-${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}}
 
-    echo -ne "${PROMPT}👉 oCIS admin password (default: changeme): ${RESET}"
-    read -r OCIS_PASS
-    OCIS_PASS=${OCIS_PASS:-changeme}
+  # Vaultwarden
+  VW_TOKEN_WAS_GENERATED=false
+  echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
+  read -r VW_TOKEN
+  if [ -z "$VW_TOKEN" ]; then
+    VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
+    VW_TOKEN_WAS_GENERATED=true
+    echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
+  fi
 
-    # Fixed/default IDs from oCIS docs
-    OCIS_ADMIN_USER_ID="958d7151-528b-42b1-9e3a-fc9e7f1f5d34"
-    OCIS_SYSTEM_USER_ID="admin"
-    PROXY_USER_ID="admin"
+  # OCIS
+  echo -ne "${PROMPT}👉 oCIS admin username (default: ${OCIS_ADMIN_USER:-admin}): ${RESET}"
+  read -r OCIS_USER
+  OCIS_USER=${OCIS_USER:-${OCIS_ADMIN_USER:-admin}}
 
-    # Auto-generate only if missing
-    if [ -z "${OCIS_JWT_SECRET:-}" ]; then
-      OCIS_JWT_SECRET=$(openssl rand -hex 32)
-      OCIS_JWT_SECRET_WAS_GENERATED=true
-    fi
+  echo -ne "${PROMPT}👉 oCIS admin password (default: ${OCIS_ADMIN_PASS:-changeme}): ${RESET}"
+  read -r OCIS_PASS
+  OCIS_PASS=${OCIS_PASS:-${OCIS_ADMIN_PASS:-changeme}}
 
-    if [ -z "${OCIS_MACHINE_AUTH_API_KEY:-}" ]; then
-      OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
-      OCIS_MACHINE_KEY_WAS_GENERATED=true
-    fi
+  # Auto-generate secrets if still set to 'changeme'
+  [ "${OCIS_JWT_SECRET:-changeme}" = "changeme" ] && OCIS_JWT_SECRET=$(openssl rand -hex 32)
+  [ "${OCIS_MACHINE_AUTH_API_KEY:-changeme}" = "changeme" ] && OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
+  [ "${OCIS_TRANSFER_SECRET:-changeme}" = "changeme" ] && OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
 
-    if [ -z "${OCIS_TRANSFER_SECRET:-}" ]; then
-      OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
-      OCIS_TRANSFER_SECRET_WAS_GENERATED=true
-    fi
+  # Grafana
+  echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
+  read -r GRAFANA_USER
+  GRAFANA_USER=${GRAFANA_USER:-${GRAFANA_ADMIN_USER:-admin}}
 
-    # --- Prompt for Grafana ---
-    echo -ne "${PROMPT}👉 Grafana admin username (default: ${GRAFANA_ADMIN_USER:-admin}): ${RESET}"
-    read -r GRAFANA_USER
-    GRAFANA_USER=${GRAFANA_USER:-${GRAFANA_ADMIN_USER:-admin}}
+  echo -ne "${PROMPT}👉 Grafana admin password (default: ${GRAFANA_ADMIN_PASSWORD:-changeme}): ${RESET}"
+  read -r GRAFANA_PASS
+  GRAFANA_PASS=${GRAFANA_PASS:-${GRAFANA_ADMIN_PASSWORD:-changeme}}
 
-    echo -ne "${PROMPT}👉 Grafana admin password (default: ${GRAFANA_ADMIN_PASSWORD:-changeme}): ${RESET}"
-    read -r GRAFANA_PASS
-    GRAFANA_PASS=${GRAFANA_PASS:-${GRAFANA_ADMIN_PASSWORD:-changeme}}
+  # ntfy
+  echo -ne "${PROMPT}👉 ntfy default access (default: ${NTFY_AUTH_DEFAULT_ACCESS:-read-only}): ${RESET}"
+  read -r NTFY_ACCESS
+  NTFY_ACCESS=${NTFY_ACCESS:-${NTFY_AUTH_DEFAULT_ACCESS:-read-only}}
 
-    # --- Prompt for ntfy ---
-    echo -ne "${PROMPT}👉 ntfy default access (default: ${NTFY_AUTH_DEFAULT_ACCESS:-read-only}): ${RESET}"
-    read -r NTFY_ACCESS
-    NTFY_ACCESS=${NTFY_ACCESS:-${NTFY_AUTH_DEFAULT_ACCESS:-read-only}}
+  # CouchDB
+  echo -ne "${PROMPT}👉 CouchDB username (default: ${COUCHDB_USER:-obsidian}): ${RESET}"
+  read -r COUCHDB_USER
+  COUCHDB_USER=${COUCHDB_USER:-${COUCHDB_USER:-obsidian}}
 
-    # --- Prompt for CouchDB ---
-    echo -ne "${PROMPT}👉 CouchDB username (default: couchdb): ${RESET}"
-    read -r COUCHDB_USER
-    COUCHDB_USER=${COUCHDB_USER:-couchdb}
+  echo -ne "${PROMPT}👉 CouchDB password (default: ${COUCHDB_PASSWORD:-changeme}): ${RESET}"
+  read -r COUCHDB_PASS
+  COUCHDB_PASS=${COUCHDB_PASS:-${COUCHDB_PASSWORD:-changeme}}
 
-    echo -ne "${PROMPT}👉 CouchDB password (default: changeme): ${RESET}"
-    read -r COUCHDB_PASS
-    COUCHDB_PASS=${COUCHDB_PASS:-changeme}
-
-
-    # Confirm overwrite
-    echo
-    echo -ne "${WARN}⚠️  Overwrite $ENV_FILE with these new values?${RESET} [y/n]: "
-    read -r CONFIRM_OVERWRITE
-    CONFIRM_OVERWRITE=${CONFIRM_OVERWRITE,,}
-
-    if [[ "$CONFIRM_OVERWRITE" == "y" || "$CONFIRM_OVERWRITE" == "yes" ]]; then
-      cat > "$ENV_FILE" <<EOF
-# ── Gitea ────────────────────────────────────────────────
+  # --- Write new .env ---
+  cat > "$ENV_FILE" <<EOF
 GITEA_ADMIN_USER=$GITEA_USER
 GITEA_ADMIN_PASS=$GITEA_PASS
 GITEA_ADMIN_EMAIL=$GITEA_MAIL
 
-# ── Vaultwarden ──────────────────────────────────────────
 VW_SIGNUPS_ALLOWED=false
 VW_ADMIN_TOKEN=$VW_TOKEN
 
-# ── Grafana ──────────────────────────────────────────────
 GRAFANA_ADMIN_USER=$GRAFANA_USER
 GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
 
-# ── ntfy ─────────────────────────────────────────────────
 NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
 
-# ── OCIS (OwnCloud Infinite Scale) ──────────────────────
 OCIS_ADMIN_USER=$OCIS_USER
 OCIS_ADMIN_PASS=$OCIS_PASS
-OCIS_ADMIN_USER_ID=$OCIS_ADMIN_USER_ID
-OCIS_SYSTEM_USER_ID=$OCIS_SYSTEM_USER_ID
-PROXY_USER_ID=$PROXY_USER_ID
+OCIS_ADMIN_USER_ID=958d7151-528b-42b1-9e3a-fc9e7f1f5d34
+OCIS_SYSTEM_USER_ID=admin
+PROXY_USER_ID=admin
 OCIS_JWT_SECRET=$OCIS_JWT_SECRET
 OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
 STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
+
+COUCHDB_USER=$COUCHDB_USER
+COUCHDB_PASSWORD=$COUCHDB_PASS
 EOF
 
-      echo -e "${SUCCESS}✅ Secrets updated in $ENV_FILE${RESET}"
-    else
-      echo -e "${INFO}ℹ️  Keeping existing .env (no changes applied).${RESET}"
-    fi
-  fi
+  echo -e "${SUCCESS}✅ Secrets written to $ENV_FILE${RESET}"
 else
-  echo -e "${INFO}ℹ️  No .env found. Creating a new one...${RESET}"
+  echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
+fi
 
   # Prompt new values
   echo -ne "${PROMPT}👉 Gitea admin username (default: atlas): ${RESET}"

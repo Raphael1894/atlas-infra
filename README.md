@@ -95,21 +95,19 @@ Once installed, access your services at:
 
 ## ⚙️ Configuration
 
-- **Config templates** → `config/config-templates/`
-  - `server_config.env.template` → blueprint for server identity & system paths.  
-  - `.env.template` → blueprint for secrets (admin users, tokens, passwords).  
+- **Environment files**
+  - `config/config-templates/.env.template` → Safe defaults & examples (never modified)
+  - `config/.env` → Real secrets and credentials (auto-created from template during install)
+    - Installer will prompt you for values and auto-generate secrets if left blank.
+    - ⚠️ Never commit `.env` — it’s ignored in `.gitignore`.
+    - To reset, delete `.env` and re-run `install.sh`.
 
-- **Server settings** → `config/server_config.env`  
-  - Hostname, domain, data paths, timezone, Docker network  
-  - Safe to commit/version  
+- **Server config**
+  - `config/config-templates/server_config.env.template` → Blueprint for server identity & system paths
+  - `config/server_config.env` → Active server config (safe to commit/version)
 
-- **Secrets** → `config/.env`  
-  - Service admin creds & tokens  
-  - ⚠️ Never commit this file (it’s in `.gitignore`)  
-  - Regenerate anytime by re-running `install.sh`  
-
-- **CouchDB**  
-  - Used by Obsidian LiveSync plugin for real-time vault sync  
+- **CouchDB**
+  - Used by Obsidian LiveSync plugin for real-time vault sync
   - Credentials stored in `config/.env` (`COUCHDB_USER` / `COUCHDB_PASSWORD`)
 
 ---
