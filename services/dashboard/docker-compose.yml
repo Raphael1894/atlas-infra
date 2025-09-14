@@ -6,6 +6,7 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
+      - HOMEPAGE_ALLOWED_HOSTS=${ATLAS_HOSTNAME}.${BASE_DOMAIN}
     volumes:
       - ${DATA_ROOT}/homepage:/config
       - ./homepage.yaml:/config/homepage.yaml:ro
