@@ -11,13 +11,13 @@ services:
       - ${DATA_ROOT}/ntfy:/var/lib/ntfy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ntfy.rule=Host(`ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.ntfy.rule=Host(ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
       - "traefik.http.routers.ntfy.entrypoints=web"
     restart: unless-stopped
     networks:
-      - atlas
+      - atlas_net
 
 networks:
-  atlas:
+  atlas_net:
     external: true
     name: ${ATLAS_DOCKER_NETWORK}

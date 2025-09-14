@@ -10,14 +10,14 @@ services:
       - ${DATA_ROOT}/vaultwarden:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.vault.rule=Host(`vault.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.vault.rule=Host(vault.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
       - "traefik.http.routers.vault.entrypoints=web"
+      - "traefik.http.services.vault.loadbalancer.server.port=80"
     restart: unless-stopped
     networks:
-      - atlas
-
+      - atlas_net
 
 networks:
-  atlas:
+  atlas_net:
     external: true
     name: ${ATLAS_DOCKER_NETWORK}

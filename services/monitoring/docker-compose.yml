@@ -8,10 +8,11 @@ services:
     command: ["--config.file=/etc/prometheus/prometheus.yml"]
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prom.rule=Host(`prometheus.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.prom.rule=Host(prometheus.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
       - "traefik.http.routers.prom.entrypoints=web"
     restart: unless-stopped
-    networks: [atlas]
+    networks:
+      - atlas_net
 
   victoriametrics:
     image: victoriametrics/victoria-metrics:v1.103.0
@@ -23,10 +24,11 @@ services:
       - ${DATA_ROOT}/victoriametrics:/victoria-metrics-data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.victoria.rule=Host(`vm.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.victoria.rule=Host(vm.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
       - "traefik.http.routers.victoria.entrypoints=web"
     restart: unless-stopped
-    networks: [atlas]
+    networks:
+      - atlas_net
 
   grafana:
     image: grafana/grafana:10.4.5
@@ -39,11 +41,12 @@ services:
       - ./grafana-provisioning:/etc/grafana/provisioning
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.grafana.rule=Host(grafana.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
       - "traefik.http.routers.grafana.entrypoints=web"
     depends_on: [prometheus, victoriametrics]
     restart: unless-stopped
-    networks: [atlas]
+    networks:
+      - atlas_net
 
   alertmanager:
     image: prom/alertmanager:v0.27.0
@@ -53,10 +56,11 @@ services:
       - ${DATA_ROOT}/alertmanager:/alertmanager
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.alerts.rule=Host(`alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.alerts.rule=Host(alerts.${ATLAS_HOSTNAME}.${BASE_DOMAIN})"
       - "traefik.http.routers.alerts.entrypoints=web"
     restart: unless-stopped
-    networks: [atlas]
+    networks:
+      - atlas_net
 
   node_exporter:
     image: prom/node-exporter:v1.8.1
@@ -72,16 +76,18 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
-    ports: ["9323:8080"]
+    ports:
+      - "9323:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     restart: unless-stopped
-    networks: [atlas]
+    networks:
+      - atlas_net
 
 networks:
-  atlas:
+  atlas_net:
     external: true
     name: ${ATLAS_DOCKER_NETWORK}
