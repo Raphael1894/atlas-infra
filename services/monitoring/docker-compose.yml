@@ -5,7 +5,9 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ${DATA_ROOT}/prometheus:/prometheus
-    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.external-url=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/prometheus"
     labels:
       - traefik.enable=true
       - traefik.http.routers.prometheus.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/prometheus`)
