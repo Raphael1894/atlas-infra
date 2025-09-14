@@ -137,4 +137,19 @@ Example flow:
 
 ---
 
+## 📌 Contributing Tips
+
+Atlas has a dedicated [TIPS.md](../docs/TIPS.md) file where we collect small tricks, fixes, and troubleshooting notes.
+
+If you discover a trick or a fix, add it there in the same format:
+
+- **Symptom** → what you noticed  
+- **Cause** → what’s happening behind the scenes  
+- **Solution** → clear steps to fix  
+
+This way, Atlas users can learn from each other’s setups and avoid common pitfalls.
+
+
+---
+
 ✅ With these practices, Atlas Infra remains reproducible, beginner-friendly, and reliable.

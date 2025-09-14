@@ -1,7 +1,8 @@
 title: Atlas
 subtitle: Homelab-in-a-Box
-logo: https://raw.githubusercontent.com/gethomepage/homepage/main/public/icon.png
+logo: /icons/icon.png
+favicon: /icons/icon.png
 theme: dark
 useEqualHeights: true
 background: https://source.unsplash.com/1920x1080/?space,stars,nebula
-favicon: https://raw.githubusercontent.com/gethomepage/homepage/main/public/icon.png
+baseUrl: /

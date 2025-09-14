@@ -263,6 +263,7 @@ Contributions, forks, and community-driven improvements are welcome.
 Atlas Infra includes several docs to help you use and contribute:
 
 - [README](./README.md) → Main guide (you are here)  
+- [TIPS](./docs/TIPS.md) → Community-contributed fixes, tricks, and best practices  
 - [CONTRIBUTING](./.github/CONTRIBUTING.md) → How to contribute and dev workflow  
 - [LICENSE](./LICENSE) → Project license (MIT)  
 - [SECURITY](./.github/SECURITY.md) → Security policy (no support, community fixes only)  
