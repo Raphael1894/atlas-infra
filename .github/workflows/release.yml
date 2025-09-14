@@ -19,38 +19,35 @@ jobs:
       - name: Get latest tag
         id: get_tag
         run: |
-          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.3.3.0")
           echo "latest=$latest" >> $GITHUB_OUTPUT
 
       - name: Detect version bump
         id: bump
         run: |
-          # Count total commits
+          # Extract version parts (MAJOR.MINOR.PATCH.BUILD)
+          IFS='.' read -r major minor patch build <<< "${{ steps.get_tag.outputs.latest }}"
+
+          # Count total commits since repo start
           commit_count=$(git rev-list --count HEAD)
 
-          # If no tag exists yet → start at baseline 0.3.3
-          if [ -z "${{ steps.get_tag.outputs.latest }}" ]; then
-            major=0
-            minor=3
-            patch=3
-            commits=$(git log --pretty=format:"%s")
-          else
-            # Extract version parts from latest tag
-            IFS='.' read -r major minor patch build <<< "${{ steps.get_tag.outputs.latest }}"
-            commits=$(git log ${{ steps.get_tag.outputs.latest }}..HEAD --pretty=format:"%s")
-          fi
+          # Get commit messages since last tag
+          commits=$(git log ${{ steps.get_tag.outputs.latest }}..HEAD --pretty=format:"%s")
 
-          # Detect bump type
           bump="none"
-          if echo "$commits" | grep -qiE '^fix'; then bump="patch"; fi
-          if echo "$commits" | grep -qiE '^feat'; then bump="minor"; fi
-          if echo "$commits" | grep -qiE '^MAJOR'; then bump="major"; fi
+          if echo "$commits" | grep -qiE '^MAJOR'; then
+            bump="major"
+          elif echo "$commits" | grep -qiE '^feat'; then
+            bump="minor"
+          elif echo "$commits" | grep -qiE '^fix'; then
+            bump="patch"
+          fi
 
           case $bump in
             major) major=$((major+1)); minor=0; patch=0 ;;
             minor) minor=$((minor+1)); patch=0 ;;
             patch) patch=$((patch+1)) ;;
-            none)  ;; # no semantic bump, just update build number
+            none)  ;; # no semantic bump, only commit count moves
           esac
 
           new="$major.$minor.$patch.$commit_count"
