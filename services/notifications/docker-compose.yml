@@ -5,16 +5,14 @@ services:
     command: serve
     environment:
       - TZ=${TZ}
-      - NTFY_BASE_URL=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ntfy
+      - NTFY_BASE_URL=http://ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN}
       - NTFY_AUTH_DEFAULT_ACCESS=${NTFY_AUTH_DEFAULT_ACCESS}
     volumes:
       - ${DATA_ROOT}/ntfy:/var/lib/ntfy
     labels:
       - traefik.enable=true
-      - traefik.http.routers.ntfy.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/ntfy`)
+      - traefik.http.routers.ntfy.rule=Host(`ntfy.${ATLAS_HOSTNAME}.${BASE_DOMAIN}`)
       - traefik.http.services.ntfy.loadbalancer.server.port=80
-      - traefik.http.routers.ntfy.middlewares=ntfy-strip
-      - traefik.http.middlewares.ntfy-strip.stripprefix.prefixes=/ntfy
       - traefik.http.routers.ntfy.priority=10
     restart: unless-stopped
     networks:
