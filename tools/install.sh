@@ -13,7 +13,6 @@ cd "$SCRIPT_DIR/.."   # Go to repo root
 CONFIG_DIR="config"
 TEMPLATES_DIR="$CONFIG_DIR/config-templates"
 TOOLS_DIR="tools"
-SERVICES_SCRIPTS="services/scripts"
 
 # --- Prompt for base domain / tailnet domain ---
 echo
@@ -89,104 +88,95 @@ bash "$TOOLS_DIR/network.sh"
 ENV_FILE="$CONFIG_DIR/.env"
 TEMPLATE_FILE="$TEMPLATES_DIR/.env.template"
 
-if [ ! -f "$ENV_FILE" ]; then
-  if [ -f "$TEMPLATE_FILE" ]; then
-    echo -e "${WARN}⚠️  No .env found. Creating one from template...${RESET}"
-    cp "$TEMPLATE_FILE" "$ENV_FILE"
+if [ -f "$ENV_FILE" ]; then
+  echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/n]: "
+  read -r MODIFY_ENV
+  MODIFY_ENV=${MODIFY_ENV,,}
+
+  if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
+    ENV_MODE="prompts"
   else
-    echo -e "${ERROR}❌ Missing $TEMPLATE_FILE. Cannot continue.${RESET}"
-    exit 1
+    ENV_MODE="keep"
   fi
+else
+  echo -e "${WARN}⚠️  No .env found.${RESET}"
+  echo -ne "${PROMPT}👉 Do you want to create it using prompts or defaults from template?${RESET} [prompts/default]: "
+  read -r ENV_MODE
+  ENV_MODE=${ENV_MODE,,}
 fi
 
-# Ask user if they want to update .env
-echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/n]: "
-read -r MODIFY_ENV
-MODIFY_ENV=${MODIFY_ENV,,}
-
-if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
+if [[ "$ENV_MODE" == "prompts" ]]; then
   # --- Prompt new values ---
   echo -ne "${PROMPT}👉 Gitea admin username (default: atlas): ${RESET}"
-  read -r GITEA_USER
-  GITEA_USER=${GITEA_USER:-atlas}
+  read -r GITEA_ADMIN_USER
+  GITEA_ADMIN_USER=${GITEA_ADMIN_USER:-atlas}
 
   echo -ne "${PROMPT}👉 Gitea admin password (default: changeme): ${RESET}"
-  read -r GITEA_PASS
-  GITEA_PASS=${GITEA_PASS:-changeme}
+  read -r GITEA_ADMIN_PASS
+  GITEA_ADMIN_PASS=${GITEA_ADMIN_PASS:-changeme}
 
   echo -ne "${PROMPT}👉 Gitea admin email (default: admin@${SERVER_NAME}.${BASE_DOMAIN}): ${RESET}"
-  read -r GITEA_MAIL
-  GITEA_MAIL=${GITEA_MAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}
+  read -r GITEA_ADMIN_EMAIL
+  GITEA_ADMIN_EMAIL=${GITEA_ADMIN_EMAIL:-admin@${SERVER_NAME}.${BASE_DOMAIN}}
 
-  VW_TOKEN_WAS_GENERATED=false
-  echo -ne "${PROMPT}👉 Vaultwarden admin token (leave empty to auto-generate): ${RESET}"
-  read -r VW_TOKEN
-  if [ -z "$VW_TOKEN" ]; then
-    VW_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
-    VW_TOKEN_WAS_GENERATED=true
-    echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
-  fi
+  echo -ne "${PROMPT}👉 Grafana admin username (default: admin): ${RESET}"
+  read -r GRAFANA_ADMIN_USER
+  GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+
+  echo -ne "${PROMPT}👉 Grafana admin password (default: changeme): ${RESET}"
+  read -r GRAFANA_ADMIN_PASSWORD
+  GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
 
   echo -ne "${PROMPT}👉 oCIS admin username (default: admin): ${RESET}"
-  read -r OCIS_USER
-  OCIS_USER=${OCIS_USER:-admin}
+  read -r OCIS_ADMIN_USER
+  OCIS_ADMIN_USER=${OCIS_ADMIN_USER:-admin}
 
   echo -ne "${PROMPT}👉 oCIS admin password (default: changeme): ${RESET}"
-  read -r OCIS_PASS
-  OCIS_PASS=${OCIS_PASS:-changeme}
+  read -r OCIS_ADMIN_PASS
+  OCIS_ADMIN_PASS=${OCIS_ADMIN_PASS:-changeme}
 
-  OCIS_ADMIN_USER_ID="958d7151-528b-42b1-9e3a-fc9e7f1f5d34"
-  OCIS_SYSTEM_USER_ID="admin"
-  PROXY_USER_ID="admin"
+  echo -ne "${PROMPT}👉 ntfy default access (default: read-only): ${RESET}"
+  read -r NTFY_AUTH_DEFAULT_ACCESS
+  NTFY_AUTH_DEFAULT_ACCESS=${NTFY_AUTH_DEFAULT_ACCESS:-read-only}
 
+  echo -ne "${PROMPT}👉 CouchDB username (default: obsidian): ${RESET}"
+  read -r COUCHDB_USER
+  COUCHDB_USER=${COUCHDB_USER:-obsidian}
+
+  echo -ne "${PROMPT}👉 CouchDB password (default: changeme): ${RESET}"
+  read -r COUCHDB_PASSWORD
+  COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-changeme}
+
+  # Generate secrets
+  VW_ADMIN_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
   OCIS_JWT_SECRET=$(openssl rand -hex 32)
   OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
   OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
 
-  echo -ne "${PROMPT}👉 Grafana admin username (default: admin): ${RESET}"
-  read -r GRAFANA_USER
-  GRAFANA_USER=${GRAFANA_USER:-admin}
-
-  echo -ne "${PROMPT}👉 Grafana admin password (default: changeme): ${RESET}"
-  read -r GRAFANA_PASS
-  GRAFANA_PASS=${GRAFANA_PASS:-changeme}
-
-  echo -ne "${PROMPT}👉 ntfy default access (default: read-only): ${RESET}"
-  read -r NTFY_ACCESS
-  NTFY_ACCESS=${NTFY_ACCESS:-read-only}
-
-  echo -ne "${PROMPT}👉 CouchDB username (default: admin): ${RESET}"
-  read -r COUCHDB_USER
-  COUCHDB_USER=${COUCHDB_USER:-admin}
-
-  echo -ne "${PROMPT}👉 CouchDB password (default: changeme): ${RESET}"
-  read -r COUCHDB_PASS
-  COUCHDB_PASS=${COUCHDB_PASS:-changeme}
-
-  # --- Write new .env ---
+  # Write new .env
   cat > "$ENV_FILE" <<EOF
 # ── Gitea ────────────────────────────────────────────────
-GITEA_ADMIN_USER=$GITEA_USER
-GITEA_ADMIN_PASS=$GITEA_PASS
-GITEA_ADMIN_EMAIL=$GITEA_MAIL
+GITEA_ADMIN_USER=$GITEA_ADMIN_USER
+GITEA_ADMIN_PASS=$GITEA_ADMIN_PASS
+GITEA_ADMIN_EMAIL=$GITEA_ADMIN_EMAIL
 
 # ── Vaultwarden ──────────────────────────────────────────
 VW_SIGNUPS_ALLOWED=false
-VW_ADMIN_TOKEN=$VW_TOKEN
+VW_ADMIN_TOKEN=$VW_ADMIN_TOKEN
 
 # ── Grafana ──────────────────────────────────────────────
-GRAFANA_ADMIN_USER=$GRAFANA_USER
-GRAFANA_ADMIN_PASSWORD=$GRAFANA_PASS
+GRAFANA_ADMIN_USER=$GRAFANA_ADMIN_USER
+GRAFANA_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
 
 # ── ntfy ─────────────────────────────────────────────────
-NTFY_AUTH_DEFAULT_ACCESS=$NTFY_ACCESS
+NTFY_AUTH_DEFAULT_ACCESS=$NTFY_AUTH_DEFAULT_ACCESS
 
 # ── OCIS (OwnCloud Infinite Scale) ──────────────────────
-OCIS_ADMIN_USER=$OCIS_USER
-OCIS_ADMIN_PASS=$OCIS_PASS
-OCIS_ADMIN_USER_ID=$OCIS_ADMIN_USER_ID
-OCIS_SYSTEM_USER_ID=$OCIS_SYSTEM_USER_ID
-PROXY_USER_ID=$PROXY_USER_ID
+OCIS_ADMIN_USER=$OCIS_ADMIN_USER
+OCIS_ADMIN_PASS=$OCIS_ADMIN_PASS
+OCIS_ADMIN_USER_ID=958d7151-528b-42b1-9e3a-fc9e7f1f5d34
+OCIS_SYSTEM_USER_ID=admin
+PROXY_USER_ID=admin
 OCIS_JWT_SECRET=$OCIS_JWT_SECRET
 OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
@@ -194,10 +184,16 @@ STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
 
 # ── CouchDB ─────────────────────────────────────────────
 COUCHDB_USER=$COUCHDB_USER
-COUCHDB_PASSWORD=$COUCHDB_PASS
+COUCHDB_PASSWORD=$COUCHDB_PASSWORD
 EOF
 
   echo -e "${SUCCESS}✅ Secrets written to $ENV_FILE${RESET}"
+
+elif [[ "$ENV_MODE" == "default" ]]; then
+  echo -e "${INFO}📋 Using template defaults${RESET}"
+  cp "$TEMPLATE_FILE" "$ENV_FILE"
+  sed -i "s/FQDN_BASE_PLACEHOLDER/${SERVER_NAME}.${BASE_DOMAIN}/" "$ENV_FILE"
+  sed -i "s/GENERATE_AT_INSTALL/$(openssl rand -hex 32)/g" "$ENV_FILE"
 else
   echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
 fi
@@ -238,37 +234,31 @@ echo -e "${WARN}⚠️  IMPORTANT:${RESET} Save the following credentials secure
 echo -e "   They are also stored in ${HIGHLIGHT}config/.env${RESET} (do not commit this file)."
 echo
 
-if [ "${VW_TOKEN_WAS_GENERATED:-false}" = true ]; then
-  echo -e "${ERROR}${HIGHLIGHT}Vaultwarden Admin Token:${RESET} ${VW_TOKEN:-unknown}"
-  echo "   → Required to access the Vaultwarden admin panel."
-  echo
-fi
-
 echo -e "${HIGHLIGHT}Gitea Admin:${RESET}"
-echo "   User: ${GITEA_USER:-unknown}"
-echo "   Pass: ${GITEA_PASS:-unknown}"
+echo "   User: ${GITEA_ADMIN_USER:-unknown}"
+echo "   Pass: ${GITEA_ADMIN_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/gitea"
 echo
 
 echo -e "${HIGHLIGHT}Grafana Admin:${RESET}"
-echo "   User: ${GRAFANA_USER:-unknown}"
-echo "   Pass: ${GRAFANA_PASS:-unknown}"
+echo "   User: ${GRAFANA_ADMIN_USER:-unknown}"
+echo "   Pass: ${GRAFANA_ADMIN_PASSWORD:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/grafana"
 echo
 
 echo -e "${HIGHLIGHT}OCIS Admin:${RESET}"
-echo "   User: ${OCIS_USER:-unknown}"
-echo "   Pass: ${OCIS_PASS:-unknown}"
+echo "   User: ${OCIS_ADMIN_USER:-unknown}"
+echo "   Pass: ${OCIS_ADMIN_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ocis"
 echo
 
-echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} ${NTFY_ACCESS:-unknown}"
+echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} ${NTFY_AUTH_DEFAULT_ACCESS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ntfy"
 echo
 
 echo -e "${HIGHLIGHT}CouchDB:${RESET}"
 echo "   User: ${COUCHDB_USER:-unknown}"
-echo "   Pass: ${COUCHDB_PASS:-unknown}"
+echo "   Pass: ${COUCHDB_PASSWORD:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/couchdb"
 echo
 
