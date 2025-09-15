@@ -88,6 +88,11 @@ bash "$TOOLS_DIR/network.sh"
 ENV_FILE="$CONFIG_DIR/.env"
 TEMPLATE_FILE="$TEMPLATES_DIR/.env.template"
 
+generate_secret() { openssl rand -hex 32; }
+generate_pass()   { openssl rand -base64 16 | tr -d '\n'; }
+generate_token()  { openssl rand -base64 48 | tr -d '\n'; }
+generate_uuid()   { cat /proc/sys/kernel/random/uuid; }
+
 if [ -f "$ENV_FILE" ]; then
   echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/n]: "
   read -r MODIFY_ENV
@@ -131,9 +136,10 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
   read -r OCIS_ADMIN_USER
   OCIS_ADMIN_USER=${OCIS_ADMIN_USER:-admin}
 
-  echo -ne "${PROMPT}👉 oCIS admin password (default: changeme): ${RESET}"
+  # Auto-generate OCIS admin pass if user leaves empty
+  echo -ne "${PROMPT}👉 oCIS admin password (leave empty to auto-generate): ${RESET}"
   read -r OCIS_ADMIN_PASS
-  OCIS_ADMIN_PASS=${OCIS_ADMIN_PASS:-changeme}
+  OCIS_ADMIN_PASS=${OCIS_ADMIN_PASS:-$(generate_pass)}
 
   echo -ne "${PROMPT}👉 ntfy default access (default: read-only): ${RESET}"
   read -r NTFY_AUTH_DEFAULT_ACCESS
@@ -147,16 +153,17 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
   read -r COUCHDB_PASSWORD
   COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-changeme}
 
-    # Generate secrets
-  VW_ADMIN_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
-  OCIS_JWT_SECRET=$(openssl rand -hex 32)
-  OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
-  OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
-  OCIS_ADMIN_PASS=$(openssl rand -base64 16 | tr -d '\n')
-  OCIS_SYSTEM_USER_API_KEY=$(openssl rand -hex 32)
-  OCIS_SERVICE_ACCOUNT_SECRET=$(openssl rand -hex 32)
+  # --- Generate secrets ---
+  VW_ADMIN_TOKEN=$(generate_token)
+  OCIS_JWT_SECRET=$(generate_secret)
+  OCIS_MACHINE_AUTH_API_KEY=$(generate_secret)
+  OCIS_TRANSFER_SECRET=$(generate_secret)
+  OCIS_SYSTEM_USER_API_KEY=$(generate_secret)
+  OCIS_SERVICE_ACCOUNT_SECRET=$(generate_secret)
+  IDM_ADMIN_PASSWORD=$(generate_pass)
+  IDM_BIND_PASSWORD=$(generate_pass)
 
-  # Write new .env
+  # --- Write .env ---
   cat > "$ENV_FILE" <<EOF
 # ── Gitea ────────────────────────────────────────────────
 GITEA_ADMIN_USER=$GITEA_ADMIN_USER
@@ -186,6 +193,8 @@ OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
 OCIS_SYSTEM_USER_API_KEY=$OCIS_SYSTEM_USER_API_KEY
 OCIS_SERVICE_ACCOUNT_SECRET=$OCIS_SERVICE_ACCOUNT_SECRET
 STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
+IDM_ADMIN_PASSWORD=$IDM_ADMIN_PASSWORD
+IDM_BIND_PASSWORD=$IDM_BIND_PASSWORD
 
 # ── CouchDB ─────────────────────────────────────────────
 COUCHDB_USER=$COUCHDB_USER
@@ -198,7 +207,7 @@ elif [[ "$ENV_MODE" == "default" ]]; then
   echo -e "${INFO}📋 Using template defaults${RESET}"
   cp "$TEMPLATE_FILE" "$ENV_FILE"
   sed -i "s/FQDN_BASE_PLACEHOLDER/${SERVER_NAME}.${BASE_DOMAIN}/" "$ENV_FILE"
-  sed -i "s/GENERATE_AT_INSTALL/$(openssl rand -hex 32)/g" "$ENV_FILE"
+  sed -i "s/GENERATE_AT_INSTALL/$(generate_secret)/g" "$ENV_FILE"
 else
   echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
 fi

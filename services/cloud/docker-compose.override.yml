@@ -22,25 +22,25 @@ services:
       STORAGE_USERS_DRIVER: "ocis"
       STORAGE_USERS_OCIS_ROOT: "/var/lib/ocis/storage/users"
       STORAGE_USERS_MOUNT_ID: "${STORAGE_USERS_MOUNT_ID}"
-
-      # Gateway must also know the mount ID
       GATEWAY_STORAGE_USERS_MOUNT_ID: "${STORAGE_USERS_MOUNT_ID}"
 
-      # ── Disable embedded NATS, use external ───────────────
-      EVENTS_ENDPOINT: nats://ocis-nats:4222
+      # ── Events (external NATS) ────────────────────────────
+      EVENTS_ENDPOINT: "nats://ocis-nats:4222"
       EVENTS_ENABLE: "true"
       NATS_ENABLE: "false"
 
-      # ── System user credentials (for inter-service auth) ─
-      STORAGE_SYSTEM_USER_ID: "system"
+      # ── System user (for inter-service auth) ─────────────
+      STORAGE_SYSTEM_USER_ID: "${OCIS_SYSTEM_USER_ID}"
       STORAGE_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
 
       # ── Service account (settings, userlog, clientlog) ───
-      OCIS_SERVICE_ACCOUNT_ID: "service-account"
+      OCIS_SERVICE_ACCOUNT_ID: "${OCIS_SERVICE_ACCOUNT_ID}"
       OCIS_SERVICE_ACCOUNT_SECRET: "${OCIS_SERVICE_ACCOUNT_SECRET}"
 
       # ── Disable LDAP (use builtin IDM) ───────────────────
       IDM_LDAP_ENABLE: "false"
+      IDM_ADMIN_PASSWORD: "${IDM_ADMIN_PASSWORD}"
+      IDM_BIND_PASSWORD: "${IDM_BIND_PASSWORD}"
       OCIS_IDENTITY_PROVIDERS: "ocis"
 
 volumes:
