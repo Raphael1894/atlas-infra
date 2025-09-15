@@ -8,7 +8,7 @@ services:
       OCIS_URL: "http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis"
       OCIS_LOG_LEVEL: "info"
 
-      # ── Secrets ───────────────────────────────────────────
+      # ── Secrets (generated in install.sh into .env) ───────
       OCIS_JWT_SECRET: "${OCIS_JWT_SECRET}"
       OCIS_MACHINE_AUTH_API_KEY: "${OCIS_MACHINE_AUTH_API_KEY}"
       OCIS_TRANSFER_SECRET: "${OCIS_TRANSFER_SECRET}"
@@ -40,7 +40,7 @@ services:
       OCIS_SERVICE_ACCOUNT_ID: "${OCIS_SERVICE_ACCOUNT_ID}"
       OCIS_SERVICE_ACCOUNT_SECRET: "${OCIS_SERVICE_ACCOUNT_SECRET}"
 
-      # ── Disable LDAP (use builtin IDM) ───────────────────
+      # ── Disable LDAP everywhere (force builtin IDM) ───────
       IDM_LDAP_ENABLE: "false"
       GRAPH_LDAP_ENABLE: "false"
       USERS_LDAP_ENABLE: "false"
