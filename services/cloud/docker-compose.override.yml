@@ -1,0 +1,48 @@
+services:
+  ocis:
+    environment:
+      # ── Core ──────────────────────────────────────────────
+      OCIS_INSECURE: "true"
+      OCIS_URL: "http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis"
+      OCIS_LOG_LEVEL: "info"
+
+      # ── Secrets (generated in install.sh into .env) ───────
+      OCIS_JWT_SECRET: "${OCIS_JWT_SECRET}"
+      OCIS_MACHINE_AUTH_API_KEY: "${OCIS_MACHINE_AUTH_API_KEY}"
+      OCIS_TRANSFER_SECRET: "${OCIS_TRANSFER_SECRET}"
+
+      # ── Identity ──────────────────────────────────────────
+      OCIS_ADMIN_USER: "${OCIS_ADMIN_USER}"
+      OCIS_ADMIN_PASS: "${OCIS_ADMIN_PASS}"
+      OCIS_ADMIN_USER_ID: "${OCIS_ADMIN_USER_ID}"
+      OCIS_SYSTEM_USER_ID: "${OCIS_SYSTEM_USER_ID}"
+      PROXY_USER_ID: "${PROXY_USER_ID}"
+
+      # ── Storage Users ─────────────────────────────────────
+      STORAGE_USERS_DRIVER: "ocis"
+      STORAGE_USERS_OCIS_ROOT: "/var/lib/ocis/storage/users"
+      STORAGE_USERS_MOUNT_ID: "${STORAGE_USERS_MOUNT_ID}"
+
+      # Gateway must also know the mount ID
+      GATEWAY_STORAGE_USERS_MOUNT_ID: "${STORAGE_USERS_MOUNT_ID}"
+
+      # ── Disable embedded NATS, use external ───────────────
+      EVENTS_ENDPOINT: nats://ocis-nats:4222
+      EVENTS_ENABLE: "true"
+      NATS_ENABLE: "false"
+
+      # ── System user credentials (for inter-service auth) ─
+      STORAGE_SYSTEM_USER_ID: "system"
+      STORAGE_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
+
+      # ── Service account (settings, userlog, clientlog) ───
+      OCIS_SERVICE_ACCOUNT_ID: "service-account"
+      OCIS_SERVICE_ACCOUNT_SECRET: "${OCIS_SERVICE_ACCOUNT_SECRET}"
+
+      # ── Disable LDAP (use builtin IDM) ───────────────────
+      IDM_LDAP_ENABLE: "false"
+      OCIS_IDENTITY_PROVIDERS: "ocis"
+
+volumes:
+  ocis-data:
+    driver: local

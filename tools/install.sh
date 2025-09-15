@@ -147,12 +147,14 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
   read -r COUCHDB_PASSWORD
   COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-changeme}
 
-  # Generate secrets
+    # Generate secrets
   VW_ADMIN_TOKEN=$(openssl rand -base64 48 | tr -d '\n')
   OCIS_JWT_SECRET=$(openssl rand -hex 32)
   OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
   OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
   OCIS_ADMIN_PASS=$(openssl rand -base64 16 | tr -d '\n')
+  OCIS_SYSTEM_USER_API_KEY=$(openssl rand -hex 32)
+  OCIS_SERVICE_ACCOUNT_SECRET=$(openssl rand -hex 32)
 
   # Write new .env
   cat > "$ENV_FILE" <<EOF
@@ -181,6 +183,8 @@ PROXY_USER_ID=1e0a48a5-1a9b-49dd-8260-6e2f9f96d9f5
 OCIS_JWT_SECRET=$OCIS_JWT_SECRET
 OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
+OCIS_SYSTEM_USER_API_KEY=$OCIS_SYSTEM_USER_API_KEY
+OCIS_SERVICE_ACCOUNT_SECRET=$OCIS_SERVICE_ACCOUNT_SECRET
 STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
 
 # ── CouchDB ─────────────────────────────────────────────

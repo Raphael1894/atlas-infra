@@ -36,7 +36,7 @@ up-core:
 
 # --- Full stack ---
 up-all: up-core
-	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/cloud/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/cloud/docker-compose.yml -f $(SERVICES_DIR)/cloud/docker-compose.override.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/knowledge/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/security/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/monitoring/docker-compose.yml up -d
