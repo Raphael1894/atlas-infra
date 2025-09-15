@@ -85,20 +85,10 @@ echo -e "${SUCCESS}✅ Server identity configured${RESET}"
 # --- Run network configuration ---
 bash "$TOOLS_DIR/network.sh"
 
-# --- Load defaults from existing .env if available ---
-if [ -f "$CONFIG_DIR/.env" ]; then
-  set +u
-  set -a
-  source "$CONFIG_DIR/.env"
-  set +a
-  set -u
-fi
-
 # --- Handle .env secrets ---
 ENV_FILE="$CONFIG_DIR/.env"
 TEMPLATE_FILE="$TEMPLATES_DIR/.env.template"
 
-# If no .env, copy from template
 if [ ! -f "$ENV_FILE" ]; then
   if [ -f "$TEMPLATE_FILE" ]; then
     echo -e "${WARN}⚠️  No .env found. Creating one from template...${RESET}"
@@ -115,13 +105,6 @@ read -r MODIFY_ENV
 MODIFY_ENV=${MODIFY_ENV,,}
 
 if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
-  # Load existing .env
-  set +u
-  set -a
-  source "$ENV_FILE"
-  set +a
-  set -u
-
   # --- Prompt new values ---
   echo -ne "${PROMPT}👉 Gitea admin username (default: atlas): ${RESET}"
   read -r GITEA_USER
@@ -144,7 +127,6 @@ if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
     echo -e "${WARN}🔑 Generated Vaultwarden admin token${RESET}"
   fi
 
-  # --- Prompt for OCIS ---
   echo -ne "${PROMPT}👉 oCIS admin username (default: admin): ${RESET}"
   read -r OCIS_USER
   OCIS_USER=${OCIS_USER:-admin}
@@ -153,12 +135,10 @@ if [[ "$MODIFY_ENV" == "y" || "$MODIFY_ENV" == "yes" ]]; then
   read -r OCIS_PASS
   OCIS_PASS=${OCIS_PASS:-changeme}
 
-  # Fixed/default IDs from oCIS docs
   OCIS_ADMIN_USER_ID="958d7151-528b-42b1-9e3a-fc9e7f1f5d34"
   OCIS_SYSTEM_USER_ID="admin"
   PROXY_USER_ID="admin"
 
-  # Auto-generate secrets
   OCIS_JWT_SECRET=$(openssl rand -hex 32)
   OCIS_MACHINE_AUTH_API_KEY=$(openssl rand -hex 32)
   OCIS_TRANSFER_SECRET=$(openssl rand -hex 32)
@@ -222,6 +202,13 @@ else
   echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
 fi
 
+# --- Always source .env so variables are available ---
+set +u
+set -a
+source "$ENV_FILE"
+set +a
+set -u
+
 # --- Run bootstrap ---
 echo -e "${INFO}⚙️  Running bootstrap...${RESET}"
 bash "$TOOLS_DIR/bootstrap.sh"
@@ -248,71 +235,47 @@ echo
 
 # --- Credentials Summary ---
 echo -e "${WARN}⚠️  IMPORTANT:${RESET} Save the following credentials securely."
-echo -e "   You may use a password manager, write them down, or store them however you prefer."
-echo -e "   ${HIGHLIGHT}Tip:${RESET} Since Vaultwarden is installed with Atlas, you can also add them there for convenience:"
-echo -e "   → Vaultwarden URL: http://vault.$SERVER_NAME.$BASE_DOMAIN"
-echo
-echo -e "   Credentials are also stored in ${HIGHLIGHT}config/.env${RESET} (do not commit this file)."
+echo -e "   They are also stored in ${HIGHLIGHT}config/.env${RESET} (do not commit this file)."
 echo
 
-# Vaultwarden admin token
 if [ "${VW_TOKEN_WAS_GENERATED:-false}" = true ]; then
-  echo -e "${ERROR}${HIGHLIGHT}Vaultwarden Admin Token:${RESET} $VW_TOKEN"
+  echo -e "${ERROR}${HIGHLIGHT}Vaultwarden Admin Token:${RESET} ${VW_TOKEN:-unknown}"
   echo "   → Required to access the Vaultwarden admin panel."
   echo
 fi
 
-# Gitea
 echo -e "${HIGHLIGHT}Gitea Admin:${RESET}"
-echo "   User: $GITEA_USER"
-echo "   Pass: $GITEA_PASS"
+echo "   User: ${GITEA_USER:-unknown}"
+echo "   Pass: ${GITEA_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/gitea"
 echo
 
-# Grafana
 echo -e "${HIGHLIGHT}Grafana Admin:${RESET}"
-echo "   User: $GRAFANA_USER"
-echo "   Pass: $GRAFANA_PASS"
+echo "   User: ${GRAFANA_USER:-unknown}"
+echo "   Pass: ${GRAFANA_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/grafana"
 echo
 
-# OCIS
 echo -e "${HIGHLIGHT}OCIS Admin:${RESET}"
-echo "   User: $OCIS_USER"
-echo "   Pass: $OCIS_PASS"
+echo "   User: ${OCIS_USER:-unknown}"
+echo "   Pass: ${OCIS_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ocis"
 echo
 
-# ntfy
-echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} $NTFY_ACCESS"
+echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} ${NTFY_ACCESS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ntfy"
 echo
 
-# CouchDB
 echo -e "${HIGHLIGHT}CouchDB:${RESET}"
-echo "   User: $COUCHDB_USER"
-echo "   Pass: $COUCHDB_PASS"
+echo "   User: ${COUCHDB_USER:-unknown}"
+echo "   Pass: ${COUCHDB_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/couchdb"
 echo
-
-if [ "${OCIS_JWT_SECRET_WAS_GENERATED:-false}" = true ]; then
-  echo -e "${ERROR}${HIGHLIGHT}OCIS JWT Secret:${RESET} $OCIS_JWT_SECRET"
-  echo "   → Required for internal service authentication."
-  echo
-fi
-
-if [ "${OCIS_MACHINE_KEY_WAS_GENERATED:-false}" = true ]; then
-  echo -e "${ERROR}${HIGHLIGHT}OCIS Machine Auth API Key:${RESET} $OCIS_MACHINE_AUTH_API_KEY"
-  echo "   → Required for service-to-service authentication."
-  echo
-fi
 
 # --- Post-install reminder ---
 echo -e "${INFO}👉 Reminder:${RESET}"
 echo -e "   If you haven’t authenticated Tailscale yet, run:"
 echo -e "   ${HIGHLIGHT}sudo tailscale up --ssh --hostname ${SERVER_NAME}${RESET}"
-echo
-echo -e "   This step is required to enable secure remote access over Tailscale."
 echo
 
 # --- Detect current version from git tag ---
