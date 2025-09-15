@@ -32,6 +32,7 @@ services:
       # ── System user (for inter-service auth) ─────────────
       STORAGE_SYSTEM_USER_ID: "${OCIS_SYSTEM_USER_ID}"
       STORAGE_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
+      OCIS_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
 
       # ── Service account (settings, userlog, clientlog) ───
       OCIS_SERVICE_ACCOUNT_ID: "${OCIS_SERVICE_ACCOUNT_ID}"
