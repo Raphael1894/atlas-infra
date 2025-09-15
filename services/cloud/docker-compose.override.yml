@@ -1,14 +1,12 @@
 services:
   ocis:
-    image: owncloud/ocis:latest
-    container_name: ocis
     environment:
       # ── Core ──────────────────────────────────────────────
       OCIS_INSECURE: "true"
       OCIS_URL: "http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis"
       OCIS_LOG_LEVEL: "info"
 
-      # ── Secrets (generated in install.sh into .env) ───────
+      # ── Secrets ───────────────────────────────────────────
       OCIS_JWT_SECRET: "${OCIS_JWT_SECRET}"
       OCIS_MACHINE_AUTH_API_KEY: "${OCIS_MACHINE_AUTH_API_KEY}"
       OCIS_TRANSFER_SECRET: "${OCIS_TRANSFER_SECRET}"
@@ -31,54 +29,27 @@ services:
       EVENTS_ENABLE: "true"
       NATS_ENABLE: "false"
 
-      # ── System user (for inter-service auth) ─────────────
-      STORAGE_SYSTEM_USER_ID: "${OCIS_SYSTEM_USER_ID}"
-      STORAGE_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
-      OCIS_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
-
-      # ── Service account (settings, userlog, clientlog) ───
-      OCIS_SERVICE_ACCOUNT_ID: "${OCIS_SERVICE_ACCOUNT_ID}"
-      OCIS_SERVICE_ACCOUNT_SECRET: "${OCIS_SERVICE_ACCOUNT_SECRET}"
-
-      # ── Disable LDAP everywhere (force builtin IDM) ───────
+      # ── Disable LDAP everywhere ───────────────────────────
       IDM_LDAP_ENABLE: "false"
       GRAPH_LDAP_ENABLE: "false"
       USERS_LDAP_ENABLE: "false"
       GROUPS_LDAP_ENABLE: "false"
       AUTH_BASIC_LDAP_ENABLE: "false"
+
+      # Force drivers/providers to built-in IDM
+      GRAPH_DRIVER: "ocis"
+      USERS_DRIVER: "ocis"
+      GROUPS_DRIVER: "ocis"
+      AUTH_BASIC_DRIVER: "ocis"
+
+      # ── Service account & system user ─────────────────────
+      STORAGE_SYSTEM_USER_ID: "${OCIS_SYSTEM_USER_ID}"
+      STORAGE_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
+      OCIS_SYSTEM_USER_API_KEY: "${OCIS_SYSTEM_USER_API_KEY}"
+      OCIS_SERVICE_ACCOUNT_ID: "${OCIS_SERVICE_ACCOUNT_ID}"
+      OCIS_SERVICE_ACCOUNT_SECRET: "${OCIS_SERVICE_ACCOUNT_SECRET}"
+
+      # ── IDM builtin provider ──────────────────────────────
+      OCIS_IDENTITY_PROVIDERS: "ocis"
       IDM_ADMIN_PASSWORD: "${IDM_ADMIN_PASSWORD}"
       IDM_BIND_PASSWORD: "${IDM_BIND_PASSWORD}"
-      OCIS_IDENTITY_PROVIDERS: "ocis"
-
-    volumes:
-      - /srv/atlas/ocis:/var/lib/ocis
-
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.ocis.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/ocis`)
-      - traefik.http.services.ocis.loadbalancer.server.port=9200
-      - traefik.http.routers.ocis.middlewares=ocis-strip
-      - traefik.http.middlewares.ocis-strip.stripprefix.prefixes=/ocis
-      - traefik.http.routers.ocis.priority=10
-
-    restart: unless-stopped
-    networks:
-      - atlas_net
-
-  ocis-nats:
-    image: nats:2
-    container_name: ocis-nats
-    command: ["-js"]
-    ports:
-      - "4222"
-      - "8222"
-    volumes:
-      - /srv/atlas/ocis/nats:/data
-    restart: unless-stopped
-    networks:
-      - atlas_net
-
-networks:
-  atlas_net:
-    external: true
-    name: ${ATLAS_DOCKER_NETWORK}
