@@ -1,19 +1,38 @@
+version: "3.9"
+
 services:
   ocis:
     image: owncloud/ocis:latest
     container_name: ocis
     environment:
-      - OCIS_INSECURE=true
-      - OCIS_URL=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis
-      - OCIS_JWT_SECRET=${OCIS_JWT_SECRET}
-      - OCIS_MACHINE_AUTH_API_KEY=${OCIS_MACHINE_AUTH_API_KEY}
-      - OCIS_TRANSFER_SECRET=${OCIS_TRANSFER_SECRET}
-      - OCIS_ADMIN_USER_ID=958d7151-528b-42b1-9e3a-fc9e7f1f5d34
-      - STORAGE_USERS_MOUNT_ID=${STORAGE_USERS_MOUNT_ID}
-      - OCIS_SYSTEM_USER_ID=admin
-      - PROXY_USER_ID=admin
+      # Core setup
+      OCIS_INSECURE: "true"
+      OCIS_URL: "http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis"
+      OCIS_LOG_LEVEL: "info"
+
+      # Secrets (auto-generated in install.sh → config/.env)
+      OCIS_JWT_SECRET: "${OCIS_JWT_SECRET}"
+      OCIS_MACHINE_AUTH_API_KEY: "${OCIS_MACHINE_AUTH_API_KEY}"
+      OCIS_TRANSFER_SECRET: "${OCIS_TRANSFER_SECRET}"
+
+      # Identity
+      OCIS_ADMIN_USER: "${OCIS_ADMIN_USER}"
+      OCIS_ADMIN_PASS: "${OCIS_ADMIN_PASS}"
+      OCIS_ADMIN_USER_ID: "${OCIS_ADMIN_USER_ID}"
+      OCIS_SYSTEM_USER_ID: "${OCIS_SYSTEM_USER_ID}"
+      PROXY_USER_ID: "${PROXY_USER_ID}"
+
+      # Storage-Users config (no manual ocis.yaml needed)
+      STORAGE_USERS_DRIVER: "ocis"
+      STORAGE_USERS_OCIS_ROOT: "/var/lib/ocis/storage/users"
+      STORAGE_USERS_MOUNT_ID: "${STORAGE_USERS_MOUNT_ID}"
+
+      # NATS service
+      NATS_NATS_HOST: "ocis-nats"
+
     volumes:
-      - ${DATA_ROOT}/ocis:/var/lib/ocis
+      - /srv/atlas/ocis:/var/lib/ocis
+
     labels:
       - traefik.enable=true
       - traefik.http.routers.ocis.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/ocis`)
@@ -21,6 +40,18 @@ services:
       - traefik.http.routers.ocis.middlewares=ocis-strip
       - traefik.http.middlewares.ocis-strip.stripprefix.prefixes=/ocis
       - traefik.http.routers.ocis.priority=10
+
+    restart: unless-stopped
+    networks:
+      - atlas_net
+
+  # Embedded NATS (message bus)
+  ocis-nats:
+    image: nats:2
+    container_name: ocis-nats
+    command: ["-js"] # enable JetStream
+    volumes:
+      - /srv/atlas/ocis/nats:/data
     restart: unless-stopped
     networks:
       - atlas_net
