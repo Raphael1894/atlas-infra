@@ -11,7 +11,9 @@ source "$SCRIPT_DIR/../../tools/colors.sh"
 # ── Install Docker Engine + Compose v2 ───────────────────
 
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  | sudo gpg --dearmor \
+  | sudo tee /etc/apt/keyrings/docker.gpg > /dev/null
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
 . /etc/os-release
