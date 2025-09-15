@@ -1,12 +1,14 @@
 services:
   ocis:
+    image: owncloud/ocis:latest
+    container_name: ocis
     environment:
       # ── Core ──────────────────────────────────────────────
       OCIS_INSECURE: "true"
       OCIS_URL: "http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/ocis"
       OCIS_LOG_LEVEL: "info"
 
-      # ── Secrets (generated in install.sh into .env) ───────
+      # ── Secrets ───────────────────────────────────────────
       OCIS_JWT_SECRET: "${OCIS_JWT_SECRET}"
       OCIS_MACHINE_AUTH_API_KEY: "${OCIS_MACHINE_AUTH_API_KEY}"
       OCIS_TRANSFER_SECRET: "${OCIS_TRANSFER_SECRET}"
@@ -40,10 +42,43 @@ services:
 
       # ── Disable LDAP (use builtin IDM) ───────────────────
       IDM_LDAP_ENABLE: "false"
+      GRAPH_LDAP_ENABLE: "false"
+      USERS_LDAP_ENABLE: "false"
+      GROUPS_LDAP_ENABLE: "false"
+      AUTH_BASIC_LDAP_ENABLE: "false"
       IDM_ADMIN_PASSWORD: "${IDM_ADMIN_PASSWORD}"
       IDM_BIND_PASSWORD: "${IDM_BIND_PASSWORD}"
       OCIS_IDENTITY_PROVIDERS: "ocis"
 
-volumes:
-  ocis-data:
-    driver: local
+    volumes:
+      - /srv/atlas/ocis:/var/lib/ocis
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ocis.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/ocis`)
+      - traefik.http.services.ocis.loadbalancer.server.port=9200
+      - traefik.http.routers.ocis.middlewares=ocis-strip
+      - traefik.http.middlewares.ocis-strip.stripprefix.prefixes=/ocis
+      - traefik.http.routers.ocis.priority=10
+
+    restart: unless-stopped
+    networks:
+      - atlas_net
+
+  ocis-nats:
+    image: nats:2
+    container_name: ocis-nats
+    command: ["-js"]
+    ports:
+      - "4222"
+      - "8222"
+    volumes:
+      - /srv/atlas/ocis/nats:/data
+    restart: unless-stopped
+    networks:
+      - atlas_net
+
+networks:
+  atlas_net:
+    external: true
+    name: ${ATLAS_DOCKER_NETWORK}
