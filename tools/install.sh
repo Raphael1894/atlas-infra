@@ -159,6 +159,7 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
   OCIS_MACHINE_AUTH_API_KEY=$(generate_secret)
   OCIS_TRANSFER_SECRET=$(generate_secret)
   OCIS_SYSTEM_USER_API_KEY=$(generate_secret)
+  OCIS_SERVICE_ACCOUNT_ID=$(generate_uuid)
   OCIS_SERVICE_ACCOUNT_SECRET=$(generate_secret)
   IDM_ADMIN_PASSWORD=$(generate_pass)
   IDM_BIND_PASSWORD=$(generate_pass)
@@ -191,6 +192,7 @@ OCIS_JWT_SECRET=$OCIS_JWT_SECRET
 OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
 OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
 OCIS_SYSTEM_USER_API_KEY=$OCIS_SYSTEM_USER_API_KEY
+OCIS_SERVICE_ACCOUNT_ID=$OCIS_SERVICE_ACCOUNT_ID
 OCIS_SERVICE_ACCOUNT_SECRET=$OCIS_SERVICE_ACCOUNT_SECRET
 STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
 IDM_ADMIN_PASSWORD=$IDM_ADMIN_PASSWORD
@@ -266,6 +268,11 @@ echo "   Pass: ${OCIS_ADMIN_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ocis"
 echo
 
+echo -e "${HIGHLIGHT}OCIS Service Account:${RESET}"
+echo "   ID:   ${OCIS_SERVICE_ACCOUNT_ID:-unknown}"
+echo "   Key:  ${OCIS_SERVICE_ACCOUNT_SECRET:-unknown}"
+echo
+
 echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} ${NTFY_AUTH_DEFAULT_ACCESS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ntfy"
 echo
@@ -275,6 +282,7 @@ echo "   User: ${COUCHDB_USER:-unknown}"
 echo "   Pass: ${COUCHDB_PASSWORD:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/couchdb"
 echo
+
 
 # --- Post-install reminder ---
 echo -e "${INFO}👉 Reminder:${RESET}"
