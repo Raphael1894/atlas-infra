@@ -1,28 +1,29 @@
-Core:
-    - Homepage:
-        icon: /icons/home.svg
-        href: http://atlas.end-altered.ts.net
-    - Portainer:
-        icon: /icons/portainer.svg
-        href: http://atlas.end-altered.ts.net/portainer
-    - Gitea:
-        icon: /icons/gitea.svg
-        href: http://atlas.end-altered.ts.net/gitea
-    - Nextcloud:
-        icon: /icons/nextcloud.svg
-        href: http://atlas.end-altered.ts.net/nextcloud
-    - Vaultwarden:
-        icon: /icons/vaultwarden.svg
-        href: http://atlas.end-altered.ts.net/vault
-    - Grafana:
-        icon: /icons/grafana.svg
-        href: http://atlas.end-altered.ts.net/grafana
-    - Prometheus:
-        icon: /icons/prometheus.svg
-        href: http://atlas.end-altered.ts.net/prometheus
-    - Alertmanager:
-        icon: /icons/alertmanager.svg
-        href: http://atlas.end-altered.ts.net/alerts
-    - ntfy:
-        icon: /icons/ntfy.svg
-        href: http://atlas.end-altered.ts.net/ntfy
+- name: Core
+  services:
+    - name: Homepage
+      icon: /icons/home.svg
+      href: http://atlas.end-altered.ts.net
+    - name: Portainer
+      icon: /icons/portainer.svg
+      href: http://atlas.end-altered.ts.net/portainer
+    - name: Gitea
+      icon: /icons/gitea.svg
+      href: http://atlas.end-altered.ts.net/gitea
+    - name: Nextcloud
+      icon: /icons/nextcloud.svg
+      href: http://atlas.end-altered.ts.net/nextcloud
+    - name: Vaultwarden
+      icon: /icons/vaultwarden.svg
+      href: http://atlas.end-altered.ts.net/vault
+    - name: Grafana
+      icon: /icons/grafana.svg
+      href: http://atlas.end-altered.ts.net/grafana
+    - name: Prometheus
+      icon: /icons/prometheus.svg
+      href: http://atlas.end-altered.ts.net/prometheus
+    - name: Alertmanager
+      icon: /icons/alertmanager.svg
+      href: http://atlas.end-altered.ts.net/alerts
+    - name: ntfy
+      icon: /icons/ntfy.svg
+      href: http://atlas.end-altered.ts.net/ntfy

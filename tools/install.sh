@@ -216,6 +216,13 @@ set -u
 echo -e "${INFO}⚙️  Running bootstrap...${RESET}"
 bash "$TOOLS_DIR/bootstrap.sh"
 
+# --- Ensure Nextcloud data permissions ---
+NEXTCLOUD_DIR="${DATA_ROOT:-/srv/atlas}/nextcloud"
+echo -e "${INFO}🛠 Fixing Nextcloud permissions in $NEXTCLOUD_DIR...${RESET}"
+sudo mkdir -p "$NEXTCLOUD_DIR/html" "$NEXTCLOUD_DIR/data"
+sudo chown -R 33:33 "$NEXTCLOUD_DIR/html" "$NEXTCLOUD_DIR/data"
+echo -e "${SUCCESS}✅ Nextcloud volumes prepared with www-data ownership${RESET}"
+
 # --- Bring everything up ---
 echo -e "${INFO}🚀 Starting all services...${RESET}"
 make -f "$TOOLS_DIR/Makefile" up-all
