@@ -1,29 +1,29 @@
 - name: Core
   services:
     - name: Homepage
-      icon: /icons/home.svg
+      icon: mdi:home
       href: http://atlas.end-altered.ts.net
     - name: Portainer
-      icon: /icons/portainer.svg
+      icon: mdi:docker
       href: http://atlas.end-altered.ts.net/portainer
     - name: Gitea
-      icon: /icons/gitea.svg
+      icon: mdi:git
       href: http://atlas.end-altered.ts.net/gitea
     - name: Nextcloud
-      icon: /icons/nextcloud.svg
+      icon: mdi:cloud
       href: http://atlas.end-altered.ts.net/nextcloud
     - name: Vaultwarden
-      icon: /icons/vaultwarden.svg
+      icon: mdi:lock
       href: http://atlas.end-altered.ts.net/vault
     - name: Grafana
-      icon: /icons/grafana.svg
+      icon: mdi:chart-line
       href: http://atlas.end-altered.ts.net/grafana
     - name: Prometheus
-      icon: /icons/prometheus.svg
+      icon: mdi:fire
       href: http://atlas.end-altered.ts.net/prometheus
     - name: Alertmanager
-      icon: /icons/alertmanager.svg
+      icon: mdi:alert
       href: http://atlas.end-altered.ts.net/alerts
     - name: ntfy
-      icon: /icons/ntfy.svg
+      icon: mdi:bell
       href: http://atlas.end-altered.ts.net/ntfy

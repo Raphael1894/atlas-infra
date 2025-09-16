@@ -39,6 +39,9 @@ services:
       POSTGRES_USER: ${NEXTCLOUD_DB_USER}
       POSTGRES_PASSWORD: ${NEXTCLOUD_DB_PASS}
       REDIS_HOST: nextcloud-redis
+      # 👇 NEW: force Nextcloud to honor /nextcloud
+      OVERWRITEWEBROOT: /nextcloud
+      OVERWRITECLIURL: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/nextcloud
     volumes:
       - ${DATA_ROOT}/nextcloud/html:/var/www/html
       - ${DATA_ROOT}/nextcloud/data:/var/www/html/data
@@ -59,6 +62,15 @@ services:
     depends_on:
       - nextcloud-db
       - nextcloud-redis
+    environment:
+      POSTGRES_HOST: nextcloud-db
+      POSTGRES_DB: ${NEXTCLOUD_DB}
+      POSTGRES_USER: ${NEXTCLOUD_DB_USER}
+      POSTGRES_PASSWORD: ${NEXTCLOUD_DB_PASS}
+      REDIS_HOST: nextcloud-redis
+      # 👇 same overwrite settings so CLI jobs generate correct links
+      OVERWRITEWEBROOT: /nextcloud
+      OVERWRITECLIURL: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/nextcloud
     volumes:
       - ${DATA_ROOT}/nextcloud/html:/var/www/html
       - ${DATA_ROOT}/nextcloud/data:/var/www/html/data

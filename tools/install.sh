@@ -190,6 +190,8 @@ NEXTCLOUD_ADMIN_PASS=$NEXTCLOUD_ADMIN_PASS
 NEXTCLOUD_DB=$NEXTCLOUD_DB
 NEXTCLOUD_DB_USER=$NEXTCLOUD_DB_USER
 NEXTCLOUD_DB_PASS=$NEXTCLOUD_DB_PASS
+OVERWRITEWEBROOT=/nextcloud
+OVERWRITECLIURL=http://$SERVER_NAME.$BASE_DOMAIN/nextcloud
 
 # ── CouchDB ─────────────────────────────────────────────
 COUCHDB_USER=$COUCHDB_USER
@@ -266,6 +268,7 @@ echo -e "${HIGHLIGHT}Nextcloud Admin:${RESET}"
 echo "   User: ${NEXTCLOUD_ADMIN_USER:-unknown}"
 echo "   Pass: ${NEXTCLOUD_ADMIN_PASS:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/nextcloud"
+echo "   (overwrite config applied: OVERWRITEWEBROOT=/nextcloud, OVERWRITECLIURL set dynamically)"
 echo
 
 echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} ${NTFY_AUTH_DEFAULT_ACCESS:-unknown}"
