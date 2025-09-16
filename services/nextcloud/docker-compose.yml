@@ -6,7 +6,7 @@ services:
     networks:
       - atlas_net
     volumes:
-      - /srv/atlas/nextcloud/db:/var/lib/postgresql/data
+      - ${DATA_ROOT}/nextcloud/db:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${NEXTCLOUD_DB}
       POSTGRES_USER: ${NEXTCLOUD_DB_USER}
@@ -19,7 +19,7 @@ services:
     networks:
       - atlas_net
     volumes:
-      - /srv/atlas/nextcloud/redis:/data
+      - ${DATA_ROOT}/nextcloud/redis:/data
 
   nextcloud:
     image: nextcloud:28
@@ -40,12 +40,14 @@ services:
       POSTGRES_PASSWORD: ${NEXTCLOUD_DB_PASS}
       REDIS_HOST: nextcloud-redis
     volumes:
-      - /srv/atlas/nextcloud/html:/var/www/html
-      - /srv/atlas/nextcloud/data:/var/www/html/data
+      - ${DATA_ROOT}/nextcloud/html:/var/www/html
+      - ${DATA_ROOT}/nextcloud/data:/var/www/html/data
     labels:
       - traefik.enable=true
       - traefik.http.routers.nextcloud.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/nextcloud`)
       - traefik.http.services.nextcloud.loadbalancer.server.port=80
+      - traefik.http.routers.nextcloud.middlewares=nextcloud-strip
+      - traefik.http.middlewares.nextcloud-strip.stripprefix.prefixes=/nextcloud
       - traefik.http.routers.nextcloud.priority=10
 
   nextcloud-cron:
@@ -58,8 +60,8 @@ services:
       - nextcloud-db
       - nextcloud-redis
     volumes:
-      - /srv/atlas/nextcloud/html:/var/www/html
-      - /srv/atlas/nextcloud/data:/var/www/html/data
+      - ${DATA_ROOT}/nextcloud/html:/var/www/html
+      - ${DATA_ROOT}/nextcloud/data:/var/www/html/data
     entrypoint: /cron.sh
 
 networks:
