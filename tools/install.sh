@@ -166,8 +166,8 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
   # --- Generate secrets ---
   VW_ADMIN_TOKEN=$(generate_token)
 
-  # --- Write .env ---
-  cat > "$ENV_FILE" <<EOF
+# --- Write .env ---
+cat > "$ENV_FILE" <<EOF
 # ── Gitea ────────────────────────────────────────────────
 GITEA_ADMIN_USER=$GITEA_ADMIN_USER
 GITEA_ADMIN_PASS=$GITEA_ADMIN_PASS
@@ -191,7 +191,7 @@ NEXTCLOUD_DB=$NEXTCLOUD_DB
 NEXTCLOUD_DB_USER=$NEXTCLOUD_DB_USER
 NEXTCLOUD_DB_PASS=$NEXTCLOUD_DB_PASS
 OVERWRITEWEBROOT=/nextcloud
-OVERWRITECLIURL=http://$SERVER_NAME.$BASE_DOMAIN/nextcloud
+OVERWRITECLIURL=http://${SERVER_NAME}.${BASE_DOMAIN}/nextcloud
 
 # ── CouchDB ─────────────────────────────────────────────
 COUCHDB_USER=$COUCHDB_USER
