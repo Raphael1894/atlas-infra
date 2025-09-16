@@ -87,6 +87,10 @@ for cname in nextcloud nextcloud-db nextcloud-redis nextcloud-cron; do
 done
 
 echo
+echo -e "${INFO}ℹ️ Reminder: 'nextcloud-cron' runs background jobs every 5 minutes (cleanup, previews, notifications).${RESET}"
+
+
+echo
 if [ "$FAIL" -eq 0 ]; then
   echo -e "${SUCCESS}🎉 Sanity check passed. Atlas looks healthy!${RESET}"
   exit 0
