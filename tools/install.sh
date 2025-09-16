@@ -166,6 +166,13 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
   # --- Generate secrets ---
   VW_ADMIN_TOKEN=$(generate_token)
 
+# Remove old .env if it contains unresolved variables
+if grep -q '\$SERVER_NAME' "$ENV_FILE" 2>/dev/null; then
+  echo -e "${WARN}⚠️  Removing stale .env with unresolved variables...${RESET}"
+  rm -f "$ENV_FILE"
+fi
+
+
 # --- Write .env ---
 cat > "$ENV_FILE" <<EOF
 # ── Gitea ────────────────────────────────────────────────
