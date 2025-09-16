@@ -11,7 +11,7 @@ COMPOSE = sudo docker compose
 SERVICES_DIR = $(MAKEFILE_DIR)/../services
 NET ?= $(ATLAS_DOCKER_NETWORK)
 
-.PHONY: help up up-core up-all down-all ps logs restart clean
+.PHONY: help up up-core up-all down-all ps logs restart clean nuke
 
 help:
 	@echo "Available commands:"
@@ -21,9 +21,9 @@ help:
 	@echo "  make down-all     → stop all services"
 	@echo "  make ps           → show running containers"
 	@echo "  make logs         → follow logs from all containers"
-	@echo "  make restart NAME=stack  → restart one stack (e.g. NAME=cloud)"
+	@echo "  make restart NAME=stack  → restart one stack (e.g. NAME=nextcloud)"
 	@echo "  make clean        → remove all containers, networks, and volumes"
-	@echo "  make nuke         → ⚠️ stop & remove ALL containers, networks, images, and volumes"
+	@echo "  make nuke         → ⚠️ stop & remove ALL Docker containers, networks, images, and volumes"
 
 # --- Aliases ---
 up: up-all
@@ -36,7 +36,7 @@ up-core:
 
 # --- Full stack ---
 up-all: up-core
-	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/cloud/docker-compose.yml -f $(SERVICES_DIR)/cloud/docker-compose.override.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/nextcloud/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/knowledge/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/security/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/monitoring/docker-compose.yml up -d
@@ -48,7 +48,7 @@ down-all:
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/monitoring/docker-compose.yml down
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/security/docker-compose.yml down
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/knowledge/docker-compose.yml down
-	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/cloud/docker-compose.yml down
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/nextcloud/docker-compose.yml down
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/portainer/docker-compose.yml down
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/dashboard/docker-compose.yml down
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml down
@@ -83,4 +83,3 @@ nuke:
 	else \
 		echo "❌ Nuke cancelled."; \
 	fi
-

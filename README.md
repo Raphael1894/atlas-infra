@@ -3,7 +3,7 @@
 **Atlas** is a fully automated **homelab-in-a-box**.  
 It turns a bare Ubuntu Server into a private core server with:
 
-- 📦 **Storage & Collaboration** → OCIS, Gitea, Obsidian Vault sync (via CouchDB LiveSync)  
+- 📦 **Storage & Collaboration** → Nextcloud, Gitea, Obsidian Vault sync (via CouchDB LiveSync)  
 - 🔒 **Security** → Vaultwarden password manager  
 - 📊 **Monitoring & Metrics** → Prometheus, Grafana, Alertmanager, VictoriaMetrics  
 - 📣 **Notifications** → ntfy push alerts  
@@ -45,10 +45,11 @@ Base domain: tailnet-1234.ts.net
 
 → Your services will be available at:
 
-- Homepage → http://atlas.tailnet-1234.ts.net/
-- Gitea → http://atlas.tailnet-1234.ts.net/gitea
-- Vaultwarden → http://atlas.tailnet-1234.ts.net/vault
-- Grafana → http://atlas.tailnet-1234.ts.net/grafana
+- Homepage → http://atlas.tailnet-1234.ts.net/  
+- Gitea → http://atlas.tailnet-1234.ts.net/gitea  
+- Vaultwarden → http://atlas.tailnet-1234.ts.net/vault  
+- Grafana → http://atlas.tailnet-1234.ts.net/grafana  
+- Nextcloud → http://atlas.tailnet-1234.ts.net/nextcloud  
 
 ---
 
@@ -80,35 +81,35 @@ From there, you can choose to **install**, **bootstrap**, **check sanity**, or *
 
 Once installed, access your services at:
 
-- **Homepage** → `http://<hostname>.<domain>/`
-- **Portainer** → `http://<hostname>.<domain>/portainer`
-- **OCIS** → `http://<hostname>.<domain>/ocis`
-- **Gitea** → `http://<hostname>.<domain>/gitea`
-- **CouchDB** → `http://<hostname>.<domain>/couchdb` (used by Obsidian LiveSync plugin)
-- **Vaultwarden** → `http://<hostname>.<domain>/vault`
-- **Grafana** → `http://<hostname>.<domain>/grafana`
-- **Prometheus** → `http://<hostname>.<domain>/prometheus`
-- **Alertmanager** → `http://<hostname>.<domain>/alerts`
-- **ntfy** → `http://<hostname>.<domain>/ntfy`
+- **Homepage** → `http://<hostname>.<domain>/`  
+- **Portainer** → `http://<hostname>.<domain>/portainer`  
+- **Nextcloud** → `http://<hostname>.<domain>/nextcloud`  
+- **Gitea** → `http://<hostname>.<domain>/gitea`  
+- **CouchDB** → `http://<hostname>.<domain>/couchdb` (used by Obsidian LiveSync plugin)  
+- **Vaultwarden** → `http://<hostname>.<domain>/vault`  
+- **Grafana** → `http://<hostname>.<domain>/grafana`  
+- **Prometheus** → `http://<hostname>.<domain>/prometheus`  
+- **Alertmanager** → `http://<hostname>.<domain>/alerts`  
+- **ntfy** → `http://<hostname>.<domain>/ntfy`  
 
 ---
 
 ## ⚙️ Configuration
 
 - **Environment files**
-  - `config/config-templates/.env.template` → Safe defaults & examples (never modified)
-  - `config/.env` → Real secrets and credentials (auto-created from template during install)
-    - Installer will prompt you for values and auto-generate secrets if left blank.
-    - ⚠️ Never commit `.env` — it’s ignored in `.gitignore`.
-    - To reset, delete `.env` and re-run `install.sh`.
+  - `config/config-templates/.env.template` → Safe defaults & examples (never modified)  
+  - `config/.env` → Real secrets and credentials (auto-created from template during install)  
+    - Installer will prompt you for values and auto-generate secrets if left blank.  
+    - ⚠️ Never commit `.env` — it’s ignored in `.gitignore`.  
+    - To reset, delete `.env` and re-run `install.sh`.  
 
 - **Server config**
-  - `config/config-templates/server_config.env.template` → Blueprint for server identity & system paths
-  - `config/server_config.env` → Active server config (safe to commit/version)
+  - `config/config-templates/server_config.env.template` → Blueprint for server identity & system paths  
+  - `config/server_config.env` → Active server config (safe to commit/version)  
 
 - **CouchDB**
-  - Used by Obsidian LiveSync plugin for real-time vault sync
-  - Credentials stored in `config/.env` (`COUCHDB_USER` / `COUCHDB_PASSWORD`)
+  - Used by Obsidian LiveSync plugin for real-time vault sync  
+  - Credentials stored in `config/.env` (`COUCHDB_USER` / `COUCHDB_PASSWORD`)  
 
 ---
 
@@ -122,12 +123,12 @@ make -f tools/Makefile up-all       # Start everything
 make -f tools/Makefile down-all     # Stop everything
 make -f tools/Makefile ps           # Show running containers
 make -f tools/Makefile logs         # Tail logs for all containers
-make -f tools/Makefile restart NAME=cloud   # Restart one stack (example: cloud)
+make -f tools/Makefile restart NAME=nextcloud   # Restart one stack (example: nextcloud)
 make -f tools/Makefile clean        # Remove all containers, networks, and volumes
 make -f tools/Makefile nuke         # ⚠️ Stop & remove ALL Docker containers, networks, images, and volumes
 ```
-⚠️ Warning: nuke is destructive.
-It resets Docker completely (like a factory reset). Only use it if you want to wipe all containers, images, and volumes, not just Atlas.
+⚠️ Warning: nuke is destructive.  
+It resets Docker completely (like a factory reset). Only use it if you want to wipe all containers, images, and volumes, not just Atlas.  
 
 ---
 
@@ -138,9 +139,9 @@ It resets Docker completely (like a factory reset). Only use it if you want to w
 - Always keep Ubuntu, Docker, and Atlas updated.  
 
 - CouchDB credentials are required by the Obsidian LiveSync plugin. Keep them private.  
-- If you use Obsidian across multiple devices, configure LiveSync with:
-  - **Server URL**: `http://<hostname>.<domain>/couchdb`
-  - **Username / Password**: from your `.env` file
+- If you use Obsidian across multiple devices, configure LiveSync with:  
+  - **Server URL**: `http://<hostname>.<domain>/couchdb`  
+  - **Username / Password**: from your `.env` file  
 
 ---
 
@@ -159,7 +160,7 @@ atlas-infra/
 │ ├── proxy/                # Traefik reverse proxy
 │ ├── dashboard/            # Homepage dashboard
 │ ├── portainer/            # Portainer manager
-│ ├── cloud/                # OCIS (file storage & collaboration)
+│ ├── nextcloud/            # Nextcloud (file storage & collaboration)
 │ ├── knowledge/            # Knowledge stack (Gitea + CouchDB for Obsidian sync)
 │ ├── security/             # Vaultwarden password manager
 │ ├── monitoring/           # Prometheus, Grafana, Alertmanager
@@ -206,7 +207,7 @@ Atlas includes [CouchDB](https://couchdb.apache.org/), which powers the **Obsidi
    - Username / Password: from your Atlas `.env`  
 3. Open your vault on any device → edits sync instantly.  
 
-✨ This provides Dropbox/iCloud-like sync for Obsidian, but fully self-hosted.
+✨ This provides Dropbox/iCloud-like sync for Obsidian, but fully self-hosted.  
 
 ---
 
@@ -224,7 +225,7 @@ This will:
 2. Run a sanity check to ensure all services are healthy.  
 3. Ask if you want to delete development files and keep only runtime.  
 
-👉 Optional — keep full repo if you plan to update or contribute.
+👉 Optional — keep full repo if you plan to update or contribute.  
 
 ---
 
@@ -245,7 +246,7 @@ If something goes wrong:
    tools/sanity-check.sh
    ```
 
-3. Read [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) for detailed fixes. 
+3. Read [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) for detailed fixes.  
 
 ---
 
@@ -272,4 +273,3 @@ Atlas Infra includes several docs to help you use and contribute:
 - [TROUBLESHOOTING](./docs/TROUBLESHOOTING.md) → Common issues and how to fix them  
 
 👉 Start with **bash atlas.sh** to launch the menu and explore your options.
-

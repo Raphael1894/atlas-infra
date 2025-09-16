@@ -199,7 +199,7 @@ show_services() {
   echo "  Homepage:     http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/"
   echo "  Portainer:    http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/portainer"
   echo "  Gitea:        http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/gitea"
-  echo "  OCIS:         http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/ocis"
+  echo "  Nextcloud:    http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/nextcloud"
   echo "  Vaultwarden:  http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/vault"
   echo "  Grafana:      http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/grafana"
   echo "  Prometheus:   http://${INSTALL_META[hostname]}.${INSTALL_META[base_domain]}/prometheus"

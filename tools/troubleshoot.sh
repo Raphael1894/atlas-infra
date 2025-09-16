@@ -67,8 +67,10 @@ check_step "Portainer" "sudo docker ps --format '{{.Names}}' | grep -qw portaine
 
 # --- Storage & Collaboration ---
 echo -e "\n${HIGHLIGHT}📦 Storage & Collaboration${RESET}"
-check_step "OCIS (cloud)" "sudo docker ps --format '{{.Names}}' | grep -qw ocis" "Run: make -f tools/Makefile restart NAME=cloud" "ocis"
-check_step "Gitea" "sudo docker ps --format '{{.Names}}' | grep -qw gitea" "Run: make -f tools/Makefile restart NAME=knowledge" "gitea"
+check_step "Nextcloud (cloud)" "sudo docker ps --format '{{.Names}}' | grep -qw nextcloud" \
+  "Run: make -f tools/Makefile restart NAME=nextcloud" "nextcloud"
+check_step "Gitea" "sudo docker ps --format '{{.Names}}' | grep -qw gitea" \
+  "Run: make -f tools/Makefile restart NAME=knowledge" "gitea"
 
 # --- Security ---
 echo -e "\n${HIGHLIGHT}🔒 Security${RESET}"

@@ -65,6 +65,27 @@ else
   done
 fi
 
+# --- Nextcloud-specific checks ---
+echo
+echo -e "${HIGHLIGHT}📦 Nextcloud Stack Checks${RESET}"
+
+for cname in nextcloud nextcloud-db nextcloud-redis nextcloud-cron; do
+  if sudo docker ps --format '{{.Names}}' | grep -qw "$cname"; then
+    STATUS=$(sudo docker inspect --format '{{.State.Status}}' "$cname")
+    HEALTH=$(sudo docker inspect --format '{{.State.Health.Status}}' "$cname" 2>/dev/null || true)
+
+    if [[ "$STATUS" == "running" && ( -z "$HEALTH" || "$HEALTH" == "healthy" ) ]]; then
+      echo -e "${SUCCESS}✅ $cname → $STATUS ${HEALTH:+($HEALTH)}${RESET}"
+    else
+      echo -e "${ERROR}❌ $cname → $STATUS ${HEALTH:+($HEALTH)}${RESET}"
+      FAIL=1
+    fi
+  else
+    echo -e "${ERROR}❌ Container missing: $cname${RESET}"
+    FAIL=1
+  fi
+done
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo -e "${SUCCESS}🎉 Sanity check passed. Atlas looks healthy!${RESET}"

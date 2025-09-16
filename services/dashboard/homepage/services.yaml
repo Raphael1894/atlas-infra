@@ -1,4 +1,4 @@
-- Core:
+Core:
     - Homepage:
         icon: /icons/home.svg
         href: http://atlas.end-altered.ts.net
@@ -8,9 +8,9 @@
     - Gitea:
         icon: /icons/gitea.svg
         href: http://atlas.end-altered.ts.net/gitea
-    - OCIS:
-        icon: /icons/ocis.svg
-        href: http://atlas.end-altered.ts.net/ocis
+    - Nextcloud:
+        icon: /icons/nextcloud.svg
+        href: http://atlas.end-altered.ts.net/nextcloud
     - Vaultwarden:
         icon: /icons/vaultwarden.svg
         href: http://atlas.end-altered.ts.net/vault

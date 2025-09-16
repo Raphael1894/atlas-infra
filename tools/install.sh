@@ -91,7 +91,6 @@ TEMPLATE_FILE="$TEMPLATES_DIR/.env.template"
 generate_secret() { openssl rand -hex 32; }
 generate_pass()   { openssl rand -base64 16 | tr -d '\n'; }
 generate_token()  { openssl rand -base64 48 | tr -d '\n'; }
-generate_uuid()   { cat /proc/sys/kernel/random/uuid; }
 
 if [ -f "$ENV_FILE" ]; then
   echo -ne "${WARN}⚠️  A .env file already exists. Do you want to modify it?${RESET} [y/n]: "
@@ -132,14 +131,25 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
   read -r GRAFANA_ADMIN_PASSWORD
   GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
 
-  echo -ne "${PROMPT}👉 oCIS admin username (default: admin): ${RESET}"
-  read -r OCIS_ADMIN_USER
-  OCIS_ADMIN_USER=${OCIS_ADMIN_USER:-admin}
+  echo -ne "${PROMPT}👉 Nextcloud admin username (default: admin): ${RESET}"
+  read -r NEXTCLOUD_ADMIN_USER
+  NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER:-admin}
 
-  # Auto-generate OCIS admin pass if user leaves empty
-  echo -ne "${PROMPT}👉 oCIS admin password (leave empty to auto-generate): ${RESET}"
-  read -r OCIS_ADMIN_PASS
-  OCIS_ADMIN_PASS=${OCIS_ADMIN_PASS:-$(generate_pass)}
+  echo -ne "${PROMPT}👉 Nextcloud admin password (leave empty to auto-generate): ${RESET}"
+  read -r NEXTCLOUD_ADMIN_PASS
+  NEXTCLOUD_ADMIN_PASS=${NEXTCLOUD_ADMIN_PASS:-$(generate_pass)}
+
+  echo -ne "${PROMPT}👉 Nextcloud database name (default: nextcloud): ${RESET}"
+  read -r NEXTCLOUD_DB
+  NEXTCLOUD_DB=${NEXTCLOUD_DB:-nextcloud}
+
+  echo -ne "${PROMPT}👉 Nextcloud database user (default: nextcloud): ${RESET}"
+  read -r NEXTCLOUD_DB_USER
+  NEXTCLOUD_DB_USER=${NEXTCLOUD_DB_USER:-nextcloud}
+
+  echo -ne "${PROMPT}👉 Nextcloud database password (leave empty to auto-generate): ${RESET}"
+  read -r NEXTCLOUD_DB_PASS
+  NEXTCLOUD_DB_PASS=${NEXTCLOUD_DB_PASS:-$(generate_pass)}
 
   echo -ne "${PROMPT}👉 ntfy default access (default: read-only): ${RESET}"
   read -r NTFY_AUTH_DEFAULT_ACCESS
@@ -155,14 +165,6 @@ if [[ "$ENV_MODE" == "prompts" ]]; then
 
   # --- Generate secrets ---
   VW_ADMIN_TOKEN=$(generate_token)
-  OCIS_JWT_SECRET=$(generate_secret)
-  OCIS_MACHINE_AUTH_API_KEY=$(generate_secret)
-  OCIS_TRANSFER_SECRET=$(generate_secret)
-  OCIS_SYSTEM_USER_API_KEY=$(generate_secret)
-  OCIS_SERVICE_ACCOUNT_ID=$(generate_uuid)
-  OCIS_SERVICE_ACCOUNT_SECRET=$(generate_secret)
-  IDM_ADMIN_PASSWORD=$(generate_pass)
-  IDM_BIND_PASSWORD=$(generate_pass)
 
   # --- Write .env ---
   cat > "$ENV_FILE" <<EOF
@@ -182,21 +184,12 @@ GRAFANA_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
 # ── ntfy ─────────────────────────────────────────────────
 NTFY_AUTH_DEFAULT_ACCESS=$NTFY_AUTH_DEFAULT_ACCESS
 
-# ── OCIS (OwnCloud Infinite Scale) ──────────────────────
-OCIS_ADMIN_USER=$OCIS_ADMIN_USER
-OCIS_ADMIN_PASS=$OCIS_ADMIN_PASS
-OCIS_ADMIN_USER_ID=958d7151-528b-42b1-9e3a-fc9e7f1f5d34
-OCIS_SYSTEM_USER_ID=9a1db954-720f-43be-8c1e-2f3d7e8f9a2c
-PROXY_USER_ID=1e0a48a5-1a9b-49dd-8260-6e2f9f96d9f5
-OCIS_JWT_SECRET=$OCIS_JWT_SECRET
-OCIS_MACHINE_AUTH_API_KEY=$OCIS_MACHINE_AUTH_API_KEY
-OCIS_TRANSFER_SECRET=$OCIS_TRANSFER_SECRET
-OCIS_SYSTEM_USER_API_KEY=$OCIS_SYSTEM_USER_API_KEY
-OCIS_SERVICE_ACCOUNT_ID=$OCIS_SERVICE_ACCOUNT_ID
-OCIS_SERVICE_ACCOUNT_SECRET=$OCIS_SERVICE_ACCOUNT_SECRET
-STORAGE_USERS_MOUNT_ID=1284d238-aa92-42ce-bdc4-0b0000009157
-IDM_ADMIN_PASSWORD=$IDM_ADMIN_PASSWORD
-IDM_BIND_PASSWORD=$IDM_BIND_PASSWORD
+# ── Nextcloud ───────────────────────────────────────────
+NEXTCLOUD_ADMIN_USER=$NEXTCLOUD_ADMIN_USER
+NEXTCLOUD_ADMIN_PASS=$NEXTCLOUD_ADMIN_PASS
+NEXTCLOUD_DB=$NEXTCLOUD_DB
+NEXTCLOUD_DB_USER=$NEXTCLOUD_DB_USER
+NEXTCLOUD_DB_PASS=$NEXTCLOUD_DB_PASS
 
 # ── CouchDB ─────────────────────────────────────────────
 COUCHDB_USER=$COUCHDB_USER
@@ -208,8 +201,6 @@ EOF
 elif [[ "$ENV_MODE" == "default" ]]; then
   echo -e "${INFO}📋 Using template defaults${RESET}"
   cp "$TEMPLATE_FILE" "$ENV_FILE"
-  sed -i "s/FQDN_BASE_PLACEHOLDER/${SERVER_NAME}.${BASE_DOMAIN}/" "$ENV_FILE"
-  sed -i "s/GENERATE_AT_INSTALL/$(generate_secret)/g" "$ENV_FILE"
 else
   echo -e "${INFO}ℹ️  Keeping existing .env configuration.${RESET}"
 fi
@@ -233,11 +224,13 @@ make -f "$TOOLS_DIR/Makefile" up-all
 echo
 echo -e "${SUCCESS}🎉 Installation complete!${RESET}"
 echo
+echo -e "${INFO}ℹ️ Nextcloud cron container is running to handle background jobs every 5 minutes${RESET}"
+echo
 echo -e "${INFO}You can now access your server '$SERVER_NAME' services via:${RESET}"
 echo "  Homepage:     http://$SERVER_NAME.$BASE_DOMAIN/"
 echo "  Portainer:    http://$SERVER_NAME.$BASE_DOMAIN/portainer"
 echo "  Gitea:        http://$SERVER_NAME.$BASE_DOMAIN/gitea"
-echo "  OCIS:         http://$SERVER_NAME.$BASE_DOMAIN/ocis"
+echo "  Nextcloud:    http://$SERVER_NAME.$BASE_DOMAIN/nextcloud"
 echo "  Vaultwarden:  http://$SERVER_NAME.$BASE_DOMAIN/vault"
 echo "  Grafana:      http://$SERVER_NAME.$BASE_DOMAIN/grafana"
 echo "  Prometheus:   http://$SERVER_NAME.$BASE_DOMAIN/prometheus"
@@ -262,15 +255,10 @@ echo "   Pass: ${GRAFANA_ADMIN_PASSWORD:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/grafana"
 echo
 
-echo -e "${HIGHLIGHT}OCIS Admin:${RESET}"
-echo "   User: ${OCIS_ADMIN_USER:-unknown}"
-echo "   Pass: ${OCIS_ADMIN_PASS:-unknown}"
-echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/ocis"
-echo
-
-echo -e "${HIGHLIGHT}OCIS Service Account:${RESET}"
-echo "   ID:   ${OCIS_SERVICE_ACCOUNT_ID:-unknown}"
-echo "   Key:  ${OCIS_SERVICE_ACCOUNT_SECRET:-unknown}"
+echo -e "${HIGHLIGHT}Nextcloud Admin:${RESET}"
+echo "   User: ${NEXTCLOUD_ADMIN_USER:-unknown}"
+echo "   Pass: ${NEXTCLOUD_ADMIN_PASS:-unknown}"
+echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/nextcloud"
 echo
 
 echo -e "${HIGHLIGHT}ntfy Default Access:${RESET} ${NTFY_AUTH_DEFAULT_ACCESS:-unknown}"
@@ -282,7 +270,6 @@ echo "   User: ${COUCHDB_USER:-unknown}"
 echo "   Pass: ${COUCHDB_PASSWORD:-unknown}"
 echo "   URL:  http://$SERVER_NAME.$BASE_DOMAIN/couchdb"
 echo
-
 
 # --- Post-install reminder ---
 echo -e "${INFO}👉 Reminder:${RESET}"
@@ -304,7 +291,7 @@ ATLAS_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
   echo "homepage_url=http://$SERVER_NAME.$BASE_DOMAIN/"
   echo "portainer_url=http://$SERVER_NAME.$BASE_DOMAIN/portainer"
   echo "gitea_url=http://$SERVER_NAME.$BASE_DOMAIN/gitea"
-  echo "ocis_url=http://$SERVER_NAME.$BASE_DOMAIN/ocis"
+  echo "nextcloud_url=http://$SERVER_NAME.$BASE_DOMAIN/nextcloud"
   echo "vaultwarden_url=http://$SERVER_NAME.$BASE_DOMAIN/vault"
   echo "grafana_url=http://$SERVER_NAME.$BASE_DOMAIN/grafana"
   echo "prometheus_url=http://$SERVER_NAME.$BASE_DOMAIN/prometheus"
