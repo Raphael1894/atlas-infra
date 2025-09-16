@@ -1,29 +1,28 @@
-- name: Core
-  services:
-    - name: Homepage
-      icon: mdi:home
-      href: http://atlas.end-altered.ts.net
-    - name: Portainer
-      icon: mdi:docker
-      href: http://atlas.end-altered.ts.net/portainer
-    - name: Gitea
-      icon: mdi:git
-      href: http://atlas.end-altered.ts.net/gitea
-    - name: Nextcloud
-      icon: mdi:cloud
-      href: http://atlas.end-altered.ts.net/nextcloud
-    - name: Vaultwarden
-      icon: mdi:lock
-      href: http://atlas.end-altered.ts.net/vault
-    - name: Grafana
-      icon: mdi:chart-line
-      href: http://atlas.end-altered.ts.net/grafana
-    - name: Prometheus
-      icon: mdi:fire
-      href: http://atlas.end-altered.ts.net/prometheus
-    - name: Alertmanager
-      icon: mdi:alert
-      href: http://atlas.end-altered.ts.net/alerts
-    - name: ntfy
-      icon: mdi:bell
-      href: http://atlas.end-altered.ts.net/ntfy
+- Core:
+    - Homepage:
+        icon: /icons/home.svg
+        href: http://atlas.end-altered.ts.net
+    - Portainer:
+        icon: /icons/portainer.svg
+        href: http://atlas.end-altered.ts.net/portainer
+    - Gitea:
+        icon: /icons/gitea.svg
+        href: http://atlas.end-altered.ts.net/gitea
+    - Nextcloud:
+        icon: /icons/nextcloud.svg
+        href: http://atlas.end-altered.ts.net/nextcloud
+    - Vaultwarden:
+        icon: /icons/vaultwarden.svg
+        href: http://atlas.end-altered.ts.net/vault
+    - Grafana:
+        icon: /icons/grafana.svg
+        href: http://atlas.end-altered.ts.net/grafana
+    - Prometheus:
+        icon: /icons/prometheus.svg
+        href: http://atlas.end-altered.ts.net/prometheus
+    - Alertmanager:
+        icon: /icons/alertmanager.svg
+        href: http://atlas.end-altered.ts.net/alerts
+    - ntfy:
+        icon: /icons/ntfy.svg
+        href: http://atlas.end-altered.ts.net/ntfy
