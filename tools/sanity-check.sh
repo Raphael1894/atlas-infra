@@ -10,14 +10,18 @@ echo
 
 FAIL=0
 
-# Load config for network
+# Load config
 if [ -f ../config/server_config.env ]; then
   set -a
   source ../config/server_config.env
   set +a
 else
   ATLAS_DOCKER_NETWORK="atlas_net"
+  SERVER_NAME="atlas"
+  BASE_DOMAIN="tailnet-1234.ts.net"
 fi
+
+BASE_URL="http://$SERVER_NAME.$BASE_DOMAIN"
 
 # 1. Docker installed
 if command -v docker >/dev/null 2>&1; then
@@ -88,7 +92,30 @@ done
 
 echo
 echo -e "${INFO}ℹ️ Reminder: 'nextcloud-cron' runs background jobs every 5 minutes (cleanup, previews, notifications).${RESET}"
+echo
 
+# --- URL reachability checks ---
+echo -e "${HIGHLIGHT}🌐 Service URL Checks${RESET}"
+
+check_url() {
+  local url=$1
+  local keyword=$2
+  local name=$3
+
+  if curl -fsSL "$url" | grep -qi "$keyword"; then
+    echo -e "${SUCCESS}✅ $name reachable at $url${RESET}"
+  else
+    echo -e "${ERROR}❌ $name not reachable at $url${RESET}"
+    FAIL=1
+  fi
+}
+
+check_url "$BASE_URL/" "Homepage" "Homepage"
+check_url "$BASE_URL/nextcloud/status.php" "installed" "Nextcloud"
+check_url "$BASE_URL/portainer" "Portainer" "Portainer"
+check_url "$BASE_URL/grafana/login" "Grafana" "Grafana"
+check_url "$BASE_URL/vault" "Vaultwarden" "Vaultwarden"
+check_url "$BASE_URL/couchdb/" "couchdb" "CouchDB"
 
 echo
 if [ "$FAIL" -eq 0 ]; then
