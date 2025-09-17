@@ -10,18 +10,43 @@ echo
 
 FAIL=0
 
-# Load config
-if [ -f ../config/server_config.env ]; then
+# --- Config resolution ---
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CONFIG_FILE="$REPO_ROOT/config/server_config.env"
+
+if [ -f "$CONFIG_FILE" ]; then
   set -a
-  source ../config/server_config.env
+  # shellcheck source=/dev/null
+  source "$CONFIG_FILE"
   set +a
 else
-  ATLAS_DOCKER_NETWORK="atlas_net"
-  SERVER_NAME="atlas"
-  BASE_DOMAIN="tailnet-1234.ts.net"
+  echo -e "${WARN}⚠️  No server_config.env found at: $CONFIG_FILE. Using defaults.${RESET}"
 fi
 
-BASE_URL="http://$SERVER_NAME.$BASE_DOMAIN"
+# Defaults
+: "${ATLAS_DOCKER_NETWORK:=atlas_net}"
+
+# Resolve hostname/domain → prefer FQDN_BASE, then fallbacks
+SERVER_NAME_FALLBACK="${SERVER_NAME:-}"
+ATLAS_HOSTNAME_FALLBACK="${ATLAS_HOSTNAME:-}"
+BASE_DOMAIN_FALLBACK="${BASE_DOMAIN:-}"
+FQDN_BASE_FALLBACK="${FQDN_BASE:-}"
+
+if [ -n "$FQDN_BASE_FALLBACK" ]; then
+  FQDN="$FQDN_BASE_FALLBACK"
+elif [ -n "$ATLAS_HOSTNAME_FALLBACK" ] && [ -n "$BASE_DOMAIN_FALLBACK" ]; then
+  FQDN="${ATLAS_HOSTNAME_FALLBACK}.${BASE_DOMAIN_FALLBACK}"
+elif [ -n "$SERVER_NAME_FALLBACK" ] && [ -n "$BASE_DOMAIN_FALLBACK" ]; then
+  FQDN="${SERVER_NAME_FALLBACK}.${BASE_DOMAIN_FALLBACK}"
+else
+  FQDN="atlas.tailnet-1234.ts.net"
+fi
+
+BASE_URL="http://$FQDN"
+
+echo -e "${INFO}Using config file: ${HIGHLIGHT}${CONFIG_FILE}${RESET}"
+echo -e "${INFO}Resolved base URL: ${HIGHLIGHT}${BASE_URL}${RESET}"
+echo
 
 # 1. Docker installed
 if command -v docker >/dev/null 2>&1; then

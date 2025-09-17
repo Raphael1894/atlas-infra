@@ -33,8 +33,6 @@ up-core:
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/dashboard/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/portainer/docker-compose.yml up -d
-	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/homepage/docker-compose.yml up -d
-
 
 # --- Full stack ---
 up-all: up-core
