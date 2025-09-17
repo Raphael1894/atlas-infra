@@ -17,7 +17,6 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.portainer.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/portainer`)
-      - traefik.http.routers.portainer.entrypoints=web
       - traefik.http.services.portainer.loadbalancer.server.port=9000
       - traefik.http.routers.portainer.priority=10
       # Add StripPrefix middleware
