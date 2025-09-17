@@ -39,7 +39,7 @@ services:
       POSTGRES_USER: ${NEXTCLOUD_DB_USER}
       POSTGRES_PASSWORD: ${NEXTCLOUD_DB_PASS}
       REDIS_HOST: nextcloud-redis
-      # 👇 Subpath overwrite
+      # 👇 NEW: force Nextcloud to honor /nextcloud
       OVERWRITEWEBROOT: /nextcloud
       OVERWRITECLIURL: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/nextcloud
     volumes:
@@ -68,7 +68,7 @@ services:
       POSTGRES_USER: ${NEXTCLOUD_DB_USER}
       POSTGRES_PASSWORD: ${NEXTCLOUD_DB_PASS}
       REDIS_HOST: nextcloud-redis
-      # 👇 Subpath overwrite for cron tasks
+      # 👇 same overwrite settings so CLI jobs generate correct links
       OVERWRITEWEBROOT: /nextcloud
       OVERWRITECLIURL: http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/nextcloud
     volumes:

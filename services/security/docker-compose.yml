@@ -5,7 +5,7 @@ services:
     environment:
       - SIGNUPS_ALLOWED=${VW_SIGNUPS_ALLOWED}
       - ADMIN_TOKEN=${VW_ADMIN_TOKEN}
-      - DOMAIN=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/vault
+      - DOMAIN=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/vault/
       - ROCKET_BASE=/vault
     volumes:
       - ${DATA_ROOT}/vaultwarden:/data
