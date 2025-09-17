@@ -5,13 +5,14 @@
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 # Env files for Compose
-ENV_FILES = --env-file $(MAKEFILE_DIR)/../config/server_config.env --env-file $(MAKEFILE_DIR)/../config/.env
+ENV_FILES = --env-file $(MAKEFILE_DIR)/../config/server_config.env \
+ $(shell [ -f $(MAKEFILE_DIR)/../config/.env ] && echo --env-file $(MAKEFILE_DIR)/../config/.env)
 
 COMPOSE = sudo docker compose
 SERVICES_DIR = $(MAKEFILE_DIR)/../services
 NET ?= $(ATLAS_DOCKER_NETWORK)
 
-.PHONY: help up up-core up-all down-all ps logs restart clean nuke
+.PHONY: help up up-core up-all down-all ps logs restart clean restart-proxy nuke
 
 help:
 	@echo "Available commands:"
@@ -23,6 +24,7 @@ help:
 	@echo "  make logs         → follow logs from all containers"
 	@echo "  make restart NAME=stack  → restart one stack (e.g. NAME=nextcloud)"
 	@echo "  make clean        → remove all containers, networks, and volumes"
+	@echo "  make restart-proxy→ restart Traefik proxy"
 	@echo "  make nuke         → ⚠️ stop & remove ALL Docker containers, networks, images, and volumes"
 
 # --- Aliases ---
@@ -62,7 +64,8 @@ logs:
 
 restart:
 	@[ -n "$(NAME)" ] || (echo "Usage: make restart NAME=stack" && exit 1)
-	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml down && $(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml down && \
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/$(NAME)/docker-compose.yml up -d
 
 clean:
 	docker system prune -af --volumes
@@ -70,7 +73,6 @@ clean:
 restart-proxy:
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml down && \
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml up -d
-
 
 nuke:
 	@echo "☢️  💥  This will stop and remove ALL Docker containers, networks, images, and volumes."
