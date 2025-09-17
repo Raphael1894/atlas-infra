@@ -33,6 +33,8 @@ up-core:
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/dashboard/docker-compose.yml up -d
 	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/portainer/docker-compose.yml up -d
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/homepage/docker-compose.yml up -d
+
 
 # --- Full stack ---
 up-all: up-core
@@ -66,6 +68,11 @@ restart:
 
 clean:
 	docker system prune -af --volumes
+
+restart-proxy:
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml down && \
+	$(COMPOSE) $(ENV_FILES) -f $(SERVICES_DIR)/proxy/docker-compose.yml up -d
+
 
 nuke:
 	@echo "☢️  💥  This will stop and remove ALL Docker containers, networks, images, and volumes."

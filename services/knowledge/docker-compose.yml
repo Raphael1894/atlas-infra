@@ -5,7 +5,7 @@ services:
     environment:
       - USER_UID=${PUID}
       - USER_GID=${PGID}
-      - GITEA__server__ROOT_URL=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/gitea
+      - GITEA__server__ROOT_URL=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/gitea/
       - GITEA__security__INSTALL_LOCK=true
       - GITEA__database__DB_TYPE=sqlite3
       - GITEA__database__PATH=/data/gitea/gitea.db

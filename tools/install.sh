@@ -183,6 +183,7 @@ GITEA_ADMIN_EMAIL=$GITEA_ADMIN_EMAIL
 # ── Vaultwarden ──────────────────────────────────────────
 VW_SIGNUPS_ALLOWED=false
 VW_ADMIN_TOKEN=$VW_ADMIN_TOKEN
+ROCKET_BASE=/vault
 
 # ── Grafana ──────────────────────────────────────────────
 GRAFANA_ADMIN_USER=$GRAFANA_ADMIN_USER

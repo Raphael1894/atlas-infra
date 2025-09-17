@@ -4,8 +4,11 @@ services:
     container_name: traefik
     command:
       - --providers.docker=true
+      - --providers.docker.watch=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:${TRAEFIK_HTTP_PORT}
+      # enable dashboard
+      - --api.dashboard=true
       # TLS can be enabled later; for LAN-only HTTP is fine.
       # - --entrypoints.websecure.address=:${TRAEFIK_HTTPS_PORT}
     ports:
@@ -16,6 +19,11 @@ services:
     restart: unless-stopped
     networks:
       - atlas_net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/traefik`)
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.priority=100
 
 networks:
   atlas_net:

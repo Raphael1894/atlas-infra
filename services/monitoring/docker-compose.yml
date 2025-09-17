@@ -7,7 +7,7 @@ services:
       - ${DATA_ROOT}/prometheus:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--web.external-url=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/prometheus"
+      - "--web.external-url=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/prometheus/"
     labels:
       - traefik.enable=true
       - traefik.http.routers.prometheus.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/prometheus`)
@@ -46,6 +46,9 @@ services:
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--web.external-url=http://${ATLAS_HOSTNAME}.${BASE_DOMAIN}/alerts/"
     volumes:
       - ${DATA_ROOT}/grafana:/var/lib/grafana
       - ./grafana-provisioning:/etc/grafana/provisioning

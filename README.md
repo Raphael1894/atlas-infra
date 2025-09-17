@@ -1,3 +1,4 @@
+
 # 🌌 Atlas Infra
 
 **Atlas** is a fully automated **homelab-in-a-box**.  
@@ -46,10 +47,10 @@ Base domain: tailnet-1234.ts.net
 → Your services will be available at:
 
 - Homepage → http://atlas.tailnet-1234.ts.net/  
-- Gitea → http://atlas.tailnet-1234.ts.net/gitea  
-- Vaultwarden → http://atlas.tailnet-1234.ts.net/vault  
-- Grafana → http://atlas.tailnet-1234.ts.net/grafana  
-- Nextcloud → http://atlas.tailnet-1234.ts.net/nextcloud  
+- Gitea → http://atlas.tailnet-1234.ts.net/gitea/  
+- Vaultwarden → http://atlas.tailnet-1234.ts.net/vault/  
+- Grafana → http://atlas.tailnet-1234.ts.net/grafana/  
+- Nextcloud → http://atlas.tailnet-1234.ts.net/nextcloud/  
 
 ---
 
@@ -82,15 +83,19 @@ From there, you can choose to **install**, **bootstrap**, **check sanity**, or *
 Once installed, access your services at:
 
 - **Homepage** → `http://<hostname>.<domain>/`  
-- **Portainer** → `http://<hostname>.<domain>/portainer`  
-- **Nextcloud** → `http://<hostname>.<domain>/nextcloud`  
-- **Gitea** → `http://<hostname>.<domain>/gitea`  
-- **CouchDB** → `http://<hostname>.<domain>/couchdb` (used by Obsidian LiveSync plugin)  
-- **Vaultwarden** → `http://<hostname>.<domain>/vault`  
-- **Grafana** → `http://<hostname>.<domain>/grafana`  
-- **Prometheus** → `http://<hostname>.<domain>/prometheus`  
-- **Alertmanager** → `http://<hostname>.<domain>/alerts`  
-- **ntfy** → `http://<hostname>.<domain>/ntfy`  
+- **Portainer** → `http://<hostname>.<domain>/portainer/`  
+- **Nextcloud** → `http://<hostname>.<domain>/nextcloud/`  
+- **Gitea** → `http://<hostname>.<domain>/gitea/`  
+- **CouchDB** → `http://<hostname>.<domain>/couchdb/` (used by Obsidian LiveSync plugin)  
+- **Vaultwarden** → `http://<hostname>.<domain>/vault/`  
+  - Path prefix configured with `ROCKET_BASE=/vault` (set automatically in `.env`).  
+  - Admin token is auto-generated during install; save it securely.  
+- **Grafana** → `http://<hostname>.<domain>/grafana/`  
+- **Prometheus** → `http://<hostname>.<domain>/prometheus/`  
+  - Configured with `--web.external-url` for subpath routing.  
+- **Alertmanager** → `http://<hostname>.<domain>/alerts/`  
+  - Configured with `--web.external-url` for subpath routing.  
+- **ntfy** → `http://<hostname>.<domain>/ntfy/`  
 
 ---
 
@@ -118,12 +123,13 @@ Once installed, access your services at:
 The `tools/Makefile` provides shortcuts:
 
 ```bash
-make -f tools/Makefile up-core      # Start core services (proxy, dashboard, portainer)
+make -f tools/Makefile up-core      # Start core services (proxy, dashboard, portainer, homepage)
 make -f tools/Makefile up-all       # Start everything
 make -f tools/Makefile down-all     # Stop everything
 make -f tools/Makefile ps           # Show running containers
 make -f tools/Makefile logs         # Tail logs for all containers
 make -f tools/Makefile restart NAME=nextcloud   # Restart one stack (example: nextcloud)
+make -f tools/Makefile restart NAME=proxy       # Restart Traefik
 make -f tools/Makefile clean        # Remove all containers, networks, and volumes
 make -f tools/Makefile nuke         # ⚠️ Stop & remove ALL Docker containers, networks, images, and volumes
 ```

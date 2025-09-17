@@ -6,6 +6,11 @@ services:
       - --base-url=/portainer
       - -H
       - unix:///var/run/docker.sock
+      - --http-enabled
+      - --http-bind
+      - :9000
+      - --assets
+      - /portainer
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DATA_ROOT}/portainer:/data
@@ -15,6 +20,9 @@ services:
       - traefik.http.routers.portainer.entrypoints=web
       - traefik.http.services.portainer.loadbalancer.server.port=9000
       - traefik.http.routers.portainer.priority=10
+      # Add StripPrefix middleware
+      - traefik.http.routers.portainer.middlewares=portainer-strip
+      - traefik.http.middlewares.portainer-strip.stripprefix.prefixes=/portainer
     restart: unless-stopped
     networks:
       - atlas_net
