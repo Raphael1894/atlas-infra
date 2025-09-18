@@ -11,10 +11,10 @@ services:
       - ${DATA_ROOT}/vaultwarden:/data
     labels:
       - traefik.enable=true
-      - traefik.http.routers.vault.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/vault`)
+      - traefik.http.routers.vault.rule=Host(`${ATLAS_HOSTNAME}.${BASE_DOMAIN}`) && PathPrefix(`/vault/`)
       - traefik.http.services.vault.loadbalancer.server.port=80
       - traefik.http.routers.vault.middlewares=vault-strip
-      - traefik.http.middlewares.vault-strip.stripprefix.prefixes=/vault
+      - traefik.http.middlewares.vault-strip.stripprefix.prefixes=/vault/
       - traefik.http.routers.vault.priority=10
     restart: unless-stopped
     networks:
